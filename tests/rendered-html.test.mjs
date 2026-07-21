@@ -29,7 +29,7 @@ test("server-renders the food diary draft", async () => {
 
   const html = await response.text();
   assert.match(html, /오늘모먹지/);
-  assert.match(html, /오늘 뭐 먹었나요/);
+  assert.match(html, /음식 이름/);
   assert.match(html, /카메라로 촬영/);
   assert.match(html, /사진 업로드/);
   assert.match(html, /달력에 표시할 손그림/);

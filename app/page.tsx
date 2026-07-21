@@ -201,11 +201,7 @@ export default function Home() {
   return (
     <main className="app-shell">
       <header className="site-header">
-        <div>
-          <p className="eyebrow">개인 식사 기록</p>
-          <h1>오늘모먹지</h1>
-        </div>
-        <span className="privacy-label">나만의 기록</span>
+        <h1>오늘모먹지</h1>
       </header>
 
       <nav className="main-tabs" aria-label="주요 메뉴">
@@ -235,10 +231,7 @@ export default function Home() {
       {tab === "record" && (
         <section className="panel record-panel" aria-labelledby="record-title">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">{readableDate(date)}</p>
-              <h2 id="record-title">오늘 뭐 먹었나요?</h2>
-            </div>
+            <h2 id="record-title">기록</h2>
             <input
               aria-label="기록 날짜"
               className="date-input"
@@ -260,9 +253,8 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="photo-empty">
-                  <strong>사진을 추가해보세요</strong>
-                  <span>사진 없이도 기록할 수 있습니다.</span>
+                <div className="photo-empty" aria-hidden="true">
+                  <span>＋</span>
                 </div>
               )}
 
@@ -281,16 +273,12 @@ export default function Home() {
                   type="file"
                 />
               </div>
-              <p className="helper-text">
-                웹에서 촬영한 사진은 휴대폰 사진첩에 저장되지 않습니다.
-              </p>
             </div>
 
             <label className="field">
               <span>음식 이름</span>
               <input
                 onChange={(event) => setFoodName(event.target.value)}
-                placeholder="예: 김치찌개"
                 required
                 value={foodName}
               />
@@ -314,11 +302,10 @@ export default function Home() {
             </fieldset>
 
             <label className="field">
-              <span>한 줄 메모</span>
+              <span>메모</span>
               <textarea
                 maxLength={100}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="맛이나 기분을 간단히 남겨보세요."
                 rows={3}
                 value={note}
               />
@@ -326,9 +313,6 @@ export default function Home() {
 
             <fieldset className="field">
               <legend>달력에 표시할 손그림</legend>
-              <p className="helper-text field-helper">
-                하루에는 마지막으로 선택한 그림 하나만 표시됩니다.
-              </p>
               <div className="doodle-grid">
                 {DOODLES.map((item) => (
                   <label key={item.value}>
@@ -355,20 +339,12 @@ export default function Home() {
       {tab === "gallery" && (
         <section className="panel" aria-labelledby="gallery-title">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">사진 모아보기</p>
-              <h2 id="gallery-title">갤러리</h2>
-            </div>
-            <span className="count-label">{records.length}개 기록</span>
+            <h2 id="gallery-title">갤러리</h2>
           </div>
 
           {records.length === 0 ? (
             <div className="empty-state">
-              <strong>아직 기록이 없습니다.</strong>
-              <p>첫 식사를 기록하면 이곳에 모아볼 수 있어요.</p>
-              <button onClick={() => setTab("record")} type="button">
-                첫 기록 남기기
-              </button>
+              <p>기록 없음</p>
             </div>
           ) : (
             <div className="gallery-grid">
@@ -444,7 +420,7 @@ export default function Home() {
           <div className="day-detail">
             <h3>{readableDate(selectedDate)}</h3>
             {selectedRecords.length === 0 ? (
-              <p>이날의 기록이 없습니다.</p>
+              <p>기록 없음</p>
             ) : (
               <ul>
                 {selectedRecords.map((record) => (
@@ -471,10 +447,7 @@ export default function Home() {
             role="dialog"
           >
             <div className="modal-heading">
-              <div>
-                <h2 id="camera-title">카메라로 촬영</h2>
-                <p>촬영한 사진은 사진첩에 따로 저장되지 않습니다.</p>
-              </div>
+              <h2 id="camera-title">카메라</h2>
               <button onClick={() => setCameraOpen(false)} type="button">
                 닫기
               </button>
