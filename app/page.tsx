@@ -229,9 +229,8 @@ export default function Home() {
       </nav>
 
       {tab === "record" && (
-        <section className="panel record-panel" aria-labelledby="record-title">
-          <div className="section-heading">
-            <h2 id="record-title">기록</h2>
+        <section className="panel record-panel" aria-label="기록">
+          <div className="record-date-row">
             <input
               aria-label="기록 날짜"
               className="date-input"
@@ -249,7 +248,7 @@ export default function Home() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img alt="선택한 음식" src={photo} />
                   <button onClick={() => setPhoto(null)} type="button">
-                    사진 지우기
+                    삭제
                   </button>
                 </div>
               ) : (
@@ -260,10 +259,10 @@ export default function Home() {
 
               <div className="photo-actions">
                 <button onClick={() => setCameraOpen(true)} type="button">
-                  카메라로 촬영
+                  촬영
                 </button>
                 <button onClick={() => uploadRef.current?.click()} type="button">
-                  사진 업로드
+                  업로드
                 </button>
                 <input
                   accept="image/*"
@@ -276,7 +275,7 @@ export default function Home() {
             </div>
 
             <label className="field">
-              <span>음식 이름</span>
+              <span>음식</span>
               <input
                 onChange={(event) => setFoodName(event.target.value)}
                 required
@@ -285,7 +284,7 @@ export default function Home() {
             </label>
 
             <fieldset className="field">
-              <legend>식사 시간</legend>
+              <legend>시간</legend>
               <div className="choice-row meal-choices">
                 {MEAL_TYPES.map((item) => (
                   <label key={item}>
@@ -312,7 +311,7 @@ export default function Home() {
             </label>
 
             <fieldset className="field">
-              <legend>달력에 표시할 손그림</legend>
+              <legend>손그림</legend>
               <div className="doodle-grid">
                 {DOODLES.map((item) => (
                   <label key={item.value}>
@@ -330,7 +329,7 @@ export default function Home() {
             </fieldset>
 
             <button className="primary-button" type="submit">
-              기록 저장하기
+              저장
             </button>
           </form>
         </section>
@@ -376,13 +375,13 @@ export default function Home() {
         <section className="panel" aria-labelledby="calendar-title">
           <div className="calendar-heading">
             <button aria-label="이전 달" onClick={() => moveMonth(-1)} type="button">
-              이전
+              ‹
             </button>
             <h2 id="calendar-title">
               {visibleMonth.getFullYear()}년 {visibleMonth.getMonth() + 1}월
             </h2>
             <button aria-label="다음 달" onClick={() => moveMonth(1)} type="button">
-              다음
+              ›
             </button>
           </div>
 

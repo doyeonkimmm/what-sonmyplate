@@ -16,7 +16,8 @@
 
 body {
   margin: 0;
-  background: var(--background);
+  overflow-x: hidden;
+  background: #ececea;
   color: var(--text);
   font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 }
@@ -29,13 +30,16 @@ textarea {
 
 button {
   cursor: pointer;
+  min-height: 44px;
 }
 
 .app-shell {
-  width: min(100%, 760px);
-  min-height: 100vh;
+  width: min(100%, 430px);
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 32px 20px 80px;
+  background: var(--surface);
+  padding: 22px 16px calc(94px + env(safe-area-inset-bottom));
+  box-shadow: 0 0 0 1px var(--line);
 }
 
 .site-header,
@@ -49,7 +53,7 @@ button {
 }
 
 .site-header {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 h1,
@@ -61,12 +65,12 @@ p {
 
 h1 {
   margin-bottom: 0;
-  font-size: 28px;
+  font-size: 24px;
 }
 
 h2 {
   margin-bottom: 0;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 h3 {
@@ -93,20 +97,27 @@ h3 {
 }
 
 .main-tabs {
+  position: fixed;
+  z-index: 5;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-bottom: 16px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  width: min(100%, 430px);
+  margin: 0 auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
   background: var(--surface);
-  padding: 4px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
 }
 
 .main-tabs button {
   border: 0;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
-  padding: 11px;
+  padding: 10px 4px;
   color: var(--muted);
 }
 
@@ -117,15 +128,21 @@ h3 {
 }
 
 .panel {
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  border: 0;
+  border-radius: 0;
   background: var(--surface);
-  padding: 24px;
+  padding: 0;
 }
 
 .section-heading {
   align-items: flex-end;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
+}
+
+.record-date-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
 }
 
 .date-input,
@@ -133,32 +150,32 @@ h3 {
 .field textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  min-height: 46px;
+  border-radius: 6px;
   background: white;
   padding: 12px;
   color: var(--text);
 }
 
 .date-input {
-  width: auto;
+  width: 150px;
+  padding: 9px 10px;
 }
 
 .photo-area {
-  margin-bottom: 24px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 14px;
+  margin-bottom: 22px;
 }
 
 .photo-empty {
-  display: flex;
-  min-height: 150px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  display: grid;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
   background: var(--soft);
   color: var(--muted);
+  font-size: 34px;
 }
 
 .photo-empty strong {
@@ -173,7 +190,8 @@ h3 {
 .camera-modal video {
   display: block;
   width: 100%;
-  max-height: 420px;
+  max-height: 70dvh;
+  border-radius: 6px;
   background: #111;
   object-fit: contain;
 }
@@ -188,7 +206,7 @@ h3 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .photo-actions button,
@@ -197,7 +215,7 @@ h3 {
 .modal-heading button,
 .photo-preview button {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: white;
   padding: 10px 12px;
   color: var(--text);
@@ -209,7 +227,7 @@ h3 {
 
 .field {
   display: block;
-  margin: 0 0 22px;
+  margin: 0 0 20px;
   border: 0;
   padding: 0;
 }
@@ -247,8 +265,9 @@ h3 {
 .choice-row label span {
   display: block;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px;
+  min-height: 44px;
+  border-radius: 6px;
+  padding: 11px 4px;
   text-align: center;
 }
 
@@ -274,10 +293,10 @@ h3 {
 
 .doodle-grid label > span {
   display: grid;
-  min-height: 64px;
+  min-height: 58px;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: white;
   font-size: 29px;
 }
@@ -291,9 +310,10 @@ h3 {
 .primary-button {
   width: 100%;
   border: 0;
-  border-radius: 8px;
+  min-height: 50px;
+  border-radius: 6px;
   background: var(--accent);
-  padding: 14px 18px;
+  padding: 13px 18px;
   color: white;
   font-weight: 700;
 }
@@ -314,7 +334,7 @@ h3 {
 }
 
 .empty-state {
-  padding: 70px 20px;
+  padding: 42dvh 20px 0;
   text-align: center;
   color: var(--muted);
 }
@@ -330,13 +350,13 @@ h3 {
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .meal-card {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .meal-card-photo {
@@ -393,7 +413,7 @@ h3 {
 
 .calendar-grid button,
 .calendar-blank {
-  min-height: 78px;
+  min-height: 54px;
   border: 0;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -419,7 +439,7 @@ h3 {
 }
 
 .calendar-grid button strong {
-  font-size: 27px;
+  font-size: 21px;
 }
 
 .day-detail {
@@ -464,14 +484,14 @@ h3 {
   z-index: 10;
   inset: 0;
   display: grid;
-  place-items: center;
+  place-items: end center;
   background: rgb(0 0 0 / 55%);
-  padding: 20px;
+  padding: 12px;
 }
 
 .camera-modal {
-  width: min(100%, 620px);
-  border-radius: 12px;
+  width: min(100%, 430px);
+  border-radius: 10px;
   background: white;
   padding: 20px;
 }
@@ -504,25 +524,18 @@ h3 {
 
 @media (max-width: 560px) {
   .app-shell {
-    padding: 22px 12px 60px;
+    padding-right: 14px;
+    padding-left: 14px;
+    box-shadow: none;
   }
 
   .panel {
-    padding: 18px 14px;
+    padding: 0;
   }
 
   .site-header,
   .section-heading {
     align-items: flex-start;
-  }
-
-  .section-heading {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .date-input {
-    width: 100%;
   }
 
   .choice-row,
@@ -537,7 +550,7 @@ h3 {
 
   .calendar-grid button,
   .calendar-blank {
-    min-height: 62px;
+    min-height: 52px;
   }
 
   .calendar-grid button strong {
