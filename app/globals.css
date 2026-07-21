@@ -1,0 +1,546 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --text: #202020;
+  --muted: #6b6b6b;
+  --line: #dedede;
+  --soft: #f0f0ee;
+  --accent: #222222;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(100%, 760px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+.site-header,
+.section-heading,
+.calendar-heading,
+.modal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.site-header {
+  margin-bottom: 24px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 28px;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: 22px;
+}
+
+h3 {
+  margin-bottom: 4px;
+}
+
+.eyebrow,
+.helper-text,
+.count-label,
+.privacy-label,
+.meal-card small,
+.day-detail small {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.eyebrow {
+  margin-bottom: 5px;
+}
+
+.privacy-label,
+.count-label {
+  white-space: nowrap;
+}
+
+.main-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 4px;
+}
+
+.main-tabs button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  padding: 11px;
+  color: var(--muted);
+}
+
+.main-tabs button.active {
+  background: var(--soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 24px;
+}
+
+.section-heading {
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.date-input,
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 12px;
+  color: var(--text);
+}
+
+.date-input {
+  width: auto;
+}
+
+.photo-area {
+  margin-bottom: 24px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.photo-empty {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.photo-empty strong {
+  color: var(--text);
+}
+
+.photo-preview {
+  position: relative;
+}
+
+.photo-preview img,
+.camera-modal video {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  background: #111;
+  object-fit: contain;
+}
+
+.photo-preview button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+
+.photo-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.photo-actions button,
+.empty-state button,
+.calendar-heading button,
+.modal-heading button,
+.photo-preview button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 10px 12px;
+  color: var(--text);
+}
+
+.helper-text {
+  margin: 9px 0 0;
+}
+
+.field {
+  display: block;
+  margin: 0 0 22px;
+  border: 0;
+  padding: 0;
+}
+
+.field > span,
+.field > legend {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.choice-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.choice-row label,
+.doodle-grid label {
+  cursor: pointer;
+}
+
+.choice-row input,
+.doodle-grid input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice-row label span {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.choice-row input:checked + span,
+.doodle-grid input:checked + span {
+  border-color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.field-helper {
+  margin: -2px 0 10px;
+}
+
+.doodle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.doodle-grid label {
+  text-align: center;
+}
+
+.doodle-grid label > span {
+  display: grid;
+  min-height: 64px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font-size: 29px;
+}
+
+.doodle-grid small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+}
+
+.primary-button {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  padding: 14px 18px;
+  color: white;
+  font-weight: 700;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.empty-state {
+  padding: 70px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state strong {
+  color: var(--text);
+}
+
+.empty-state p {
+  margin: 8px 0 18px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.meal-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.meal-card-photo {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  background: var(--soft);
+  font-size: 52px;
+}
+
+.meal-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.meal-card-body {
+  padding: 13px;
+}
+
+.meal-card-body h3 {
+  margin-top: 5px;
+  font-size: 16px;
+}
+
+.meal-card-body p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.calendar-heading {
+  margin-bottom: 20px;
+}
+
+.weekday-row,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.weekday-row span {
+  padding: 8px 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+.calendar-grid {
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.calendar-grid button,
+.calendar-blank {
+  min-height: 78px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: white;
+}
+
+.calendar-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+}
+
+.calendar-grid button.selected {
+  background: var(--soft);
+  box-shadow: inset 0 0 0 2px var(--text);
+}
+
+.calendar-grid button span {
+  align-self: flex-start;
+  font-size: 12px;
+}
+
+.calendar-grid button strong {
+  font-size: 27px;
+}
+
+.day-detail {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.day-detail h3 {
+  font-size: 17px;
+}
+
+.day-detail > p {
+  color: var(--muted);
+}
+
+.day-detail ul {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day-detail li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.day-detail li > span {
+  font-size: 26px;
+}
+
+.day-detail li strong,
+.day-detail li small {
+  display: block;
+}
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 55%);
+  padding: 20px;
+}
+
+.camera-modal {
+  width: min(100%, 620px);
+  border-radius: 12px;
+  background: white;
+  padding: 20px;
+}
+
+.modal-heading {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.modal-heading h2 {
+  margin-bottom: 5px;
+}
+
+.modal-heading p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.camera-modal .primary-button {
+  margin-top: 12px;
+}
+
+.camera-error {
+  padding: 50px 20px;
+  background: var(--soft);
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    padding: 22px 12px 60px;
+  }
+
+  .panel {
+    padding: 18px 14px;
+  }
+
+  .site-header,
+  .section-heading {
+    align-items: flex-start;
+  }
+
+  .section-heading {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .date-input {
+    width: 100%;
+  }
+
+  .choice-row,
+  .doodle-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .choice-row label span {
+    padding: 10px 4px;
+  }
+
+  .calendar-grid button,
+  .calendar-blank {
+    min-height: 62px;
+  }
+
+  .calendar-grid button strong {
+    font-size: 22px;
+  }
+}
