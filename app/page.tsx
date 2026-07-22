@@ -1,311 +1,126 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
-type MealType = "아침" | "점심" | "저녁" | "간식";
-type Step = "photo" | "time" | "doodle" | "details";
-type Overlay = Step | "gallery" | "calendar" | null;
+type Step = "photo" | "time" | "food" | "memo";
+type Meal = "아침" | "점심" | "저녁" | "간식";
 
-type MealRecord = {
-  id: string;
-  date: string;
-  mealType: MealType;
-  foodName: string;
-  note: string;
-  doodle: string;
-  photo: string | null;
-};
-
-const DOODLES = [
-  { value: "🍚", label: "밥", color: "yellow" },
-  { value: "🍜", label: "면", color: "red" },
-  { value: "🍞", label: "빵", color: "cream" },
-  { value: "🥗", label: "채소", color: "green" },
-  { value: "🍎", label: "과일", color: "red" },
-  { value: "🍰", label: "디저트", color: "pink" },
-  { value: "🥤", label: "음료", color: "blue" },
-  { value: "🍽️", label: "기타", color: "cream" },
-];
-
-const MEALS: MealType[] = ["아침", "점심", "저녁", "간식"];
-
-function localDateString(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function monthCells(month: Date) {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
-  const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return [...Array.from({ length: first }, () => null), ...Array.from({ length: last }, (_, i) => i + 1)];
-}
-
-function readableDate(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", weekday: "short" })
-    .format(new Date(`${value}T12:00:00`));
-}
+const meals: Meal[] = ["아침", "점심", "저녁", "간식"];
+const foods = ["밥", "면", "국", "빵", "고기", "생선", "샐러드", "과일", "피자", "버거", "케이크", "아이스크림", "음료", "커피", "과자", "기타"];
 
 export default function Home() {
-  const [overlay, setOverlay] = useState<Overlay>(null);
   const [step, setStep] = useState<Step>("photo");
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [cameraMode, setCameraMode] = useState(false);
-  const [cameraError, setCameraError] = useState("");
-  const [mealType, setMealType] = useState<MealType>("점심");
-  const [doodle, setDoodle] = useState("🍚");
-  const [foodName, setFoodName] = useState("");
-  const [note, setNote] = useState("");
-  const [date, setDate] = useState(localDateString);
-  const [records, setRecords] = useState<MealRecord[]>([]);
-  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState(localDateString);
-
+  const [open, setOpen] = useState(false);
+  const [camera, setCamera] = useState(false);
+  const [photo, setPhoto] = useState("");
+  const [meal, setMeal] = useState<Meal>("점심");
+  const [food, setFood] = useState("");
+  const [memo, setMemo] = useState("");
+  const [done, setDone] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const uploadRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (overlay !== "photo" || !cameraMode) return;
-    let active = true;
-    setCameraError("");
-
+    if (!camera) return;
     navigator.mediaDevices?.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
-      .then(async (stream) => {
-        if (!active) return stream.getTracks().forEach((track) => track.stop());
+      .then(async stream => {
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
         }
       })
-      .catch(() => setCameraError("카메라 권한을 확인해주세요."));
-
+      .catch(() => setCamera(false));
     return () => {
-      active = false;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     };
-  }, [overlay, cameraMode]);
+  }, [camera]);
 
-  const recordsByDate = useMemo(() => {
-    const map = new Map<string, MealRecord[]>();
-    records.forEach((record) => map.set(record.date, [...(map.get(record.date) ?? []), record]));
-    return map;
-  }, [records]);
-
-  function advance(next: Step) {
-    setStep(next);
-    setOverlay(next);
+  function next(nextStep: Step) {
+    setStep(nextStep);
+    setOpen(true);
+    setCamera(false);
   }
 
-  function finishPhoto(value: string) {
-    setPhoto(value);
-    setCameraMode(false);
-    advance("time");
+  function usePhoto(src: string) {
+    setPhoto(src);
+    next("time");
   }
 
-  function handleUpload(event: ChangeEvent<HTMLInputElement>) {
+  function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => finishPhoto(String(reader.result));
+    reader.onload = () => usePhoto(String(reader.result));
     reader.readAsDataURL(file);
-    event.target.value = "";
   }
 
-  function capturePhoto() {
+  function shoot() {
     const video = videoRef.current;
     if (!video?.videoWidth) return;
     const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d")?.drawImage(video, 0, 0);
-    finishPhoto(canvas.toDataURL("image/jpeg", 0.86));
+    const scale = Math.min(1, 900 / video.videoWidth);
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    usePhoto(canvas.toDataURL("image/jpeg", .78));
   }
 
-  function selectMeal(value: MealType) {
-    setMealType(value);
-    advance("doodle");
-  }
-
-  function selectDoodle(value: string) {
-    setDoodle(value);
-    advance("details");
-  }
-
-  function saveRecord(event: FormEvent) {
+  function save(event: FormEvent) {
     event.preventDefault();
-    if (!foodName.trim()) return;
-    setRecords((current) => [{
-      id: `${Date.now()}`,
-      date,
-      mealType,
-      foodName: foodName.trim(),
-      note: note.trim(),
-      doodle,
-      photo,
-    }, ...current]);
-    setOverlay(null);
-    setStep("photo");
-    setPhoto(null);
-    setFoodName("");
-    setNote("");
+    const record = { id: Date.now(), photo, meal, food, memo, date: new Date().toISOString() };
+    const records = JSON.parse(localStorage.getItem("meal-records") || "[]");
+    localStorage.setItem("meal-records", JSON.stringify([record, ...records].slice(0, 30)));
+    setOpen(false);
+    setDone(true);
   }
 
-  const cells = monthCells(month);
-  const selectedRecords = recordsByDate.get(selectedDate) ?? [];
-  const stepOrder: Step[] = ["photo", "time", "doodle", "details"];
-  const stepLabels = { photo: "사진", time: "시간", doodle: "그림", details: "기록" };
+  function reset() {
+    setStep("photo"); setPhoto(""); setFood(""); setMemo(""); setDone(false); setOpen(false);
+  }
 
   return (
-    <main className="kitchen-app">
-      <header className="kitchen-header">
-        <div className="brand-mark">오늘<br />모먹지</div>
-        <div className="date-ticket">{readableDate(date)}</div>
-      </header>
+    <main className="app-shell">
+      <section className="kitchen" aria-label="오늘 뭐 먹지 기록 화면">
+        <img className="kitchen-bg" src="/kitchen-table-background.png" alt="픽셀 아트 부엌" />
+        <h1 className="logo">오늘<br />뭐 먹지?</h1>
 
-      <nav className="flow-strip" aria-label="기록 순서">
-        {stepOrder.map((item, index) => (
-          <button
-            className={`${step === item ? "active" : ""} ${stepOrder.indexOf(step) > index ? "done" : ""}`}
-            key={item}
-            onClick={() => { setStep(item); setOverlay(item); }}
-            type="button"
-          >
-            <span>{index + 1}</span>{stepLabels[item]}
-          </button>
-        ))}
-      </nav>
+        <div className="calendar-prop sprite-object" aria-hidden="true" />
+        <div className={`clock-prop lively-sprite ${step === "time" ? "active" : ""}`} aria-hidden="true" />
 
-      <section className="kitchen-scene" aria-label="나의 부엌">
-        <div className="wall-pattern" aria-hidden="true" />
+        <button className={`camera-prop lively-sprite ${step === "photo" && !done ? "active ready" : ""}`} onClick={() => { if (step === "photo" && !done) setOpen(true); }} disabled={step !== "photo" || done} aria-label="카메라를 눌러 기록 시작" />
 
-        <button className="wall-calendar" onClick={() => setOverlay("calendar")} type="button">
-          <span>JUL.</span>
-          <b>{new Date().getDate()}</b>
-          <small>달력</small>
-        </button>
+        {photo && <div className="polaroid"><img src={photo} alt="선택한 음식" /></div>}
+        {step === "food" && <div className="fridge-hint" aria-hidden="true">★</div>}
 
-        <button className={`wall-clock ${step === "time" ? "attention" : ""}`} onClick={() => setOverlay("time")} type="button">
-          <i /><b>{mealType}</b><small>시간</small>
-        </button>
-
-        <div className="window-frame" aria-hidden="true"><div /><div /></div>
-
-        <div className="fridge">
-          <div className="fridge-handle" />
-          <button className={`fridge-magnets ${step === "doodle" ? "attention" : ""}`} onClick={() => setOverlay("doodle")} type="button" aria-label="손그림 선택">
-            <span>🍚</span><span>🍜</span><span>🍞</span><span>🍎</span>
-            <small>손그림</small>
-          </button>
-          <button className="fridge-photo" onClick={() => setOverlay("gallery")} type="button" aria-label="갤러리 열기">
-            {photo ? <img src={photo} alt="현재 음식" /> : <span>PHOTO</span>}
-            <small>갤러리</small>
-          </button>
+        <div className="prompt" aria-live="polite">
+          {done ? <><b>기록 완료!</b><button onClick={reset}>새로 기록</button></> : <><span>{step === "photo" ? "카메라를 눌러 시작" : step === "time" ? "시간을 골라주세요" : step === "food" ? "음식을 골라주세요" : "메모를 남겨주세요"}</span><i>{step === "photo" ? "↑" : ""}</i></>}
         </div>
 
-        <div className="counter" aria-hidden="true" />
+        {open && <div className="shade">
+          <section className="paper" role="dialog" aria-modal="true" aria-label="식사 기록">
+            <header><small>{step === "photo" ? "1 / 4" : step === "time" ? "2 / 4" : step === "food" ? "3 / 4" : "4 / 4"}</small><button onClick={() => { setOpen(false); setCamera(false); }} aria-label="닫기">×</button></header>
 
-        <button className={`camera-object ${step === "photo" ? "attention" : ""}`} onClick={() => { setCameraMode(false); setOverlay("photo"); }} type="button">
-          <span className="camera-lens" />
-          <b>CAMERA</b>
-          {step === "photo" && <em>START!</em>}
-        </button>
+            {step === "photo" && <div className="photo-step">
+              {camera ? <><video ref={videoRef} muted playsInline /><button className="primary" onClick={shoot}>촬영</button></> : <><div className="camera-hero lively-sprite" /><button className="primary" onClick={() => setCamera(true)}>직접 촬영</button><button className="secondary" onClick={() => inputRef.current?.click()}>사진 업로드</button></>}
+              <input ref={inputRef} type="file" accept="image/*" onChange={upload} hidden />
+            </div>}
 
-        <div className="plate-preview" aria-label="선택한 사진">
-          {photo ? <img src={photo} alt="선택한 음식" /> : <span>{doodle}</span>}
-        </div>
+            {step === "time" && <div className="choice-grid meal-grid">{meals.map((item, index) => <button key={item} onClick={() => { setMeal(item); next("food"); }}><span className={`food-sprite meal-${index}`} />{item}</button>)}</div>}
 
-        <button className={`memo-object ${step === "details" ? "attention" : ""}`} onClick={() => setOverlay("details")} type="button">
-          <span>TODAY&apos;S<br />MENU</span>
-          <i>{foodName || "________"}</i>
-          <small>메모</small>
-        </button>
-      </section>
+            {step === "food" && <div className="choice-grid food-grid">{foods.map((item, index) => <button key={item} onClick={() => { setFood(item); next("memo"); }}><span className="food-sprite" style={{ backgroundPosition: `${(index % 4) * 33.333}% ${Math.floor(index / 4) * 33.333}%` }} />{item}</button>)}</div>}
 
-      {overlay && (
-        <div className="overlay-backdrop" role="presentation">
-          <section className={`retro-sheet ${overlay === "gallery" ? "gallery-sheet" : ""}`} role="dialog" aria-modal="true" aria-label={overlay}>
-            <header className="sheet-header">
-              <div>
-                {stepOrder.includes(overlay as Step) && <span>STEP {stepOrder.indexOf(overlay as Step) + 1} / 4</span>}
-                <h2>{overlay === "photo" ? "사진" : overlay === "time" ? "시간" : overlay === "doodle" ? "손그림" : overlay === "details" ? "오늘의 기록" : overlay === "gallery" ? "FOOD ARCHIVE" : `${month.getMonth() + 1}월`}</h2>
-              </div>
-              <button className="sheet-close" onClick={() => { setOverlay(null); setCameraMode(false); }} type="button" aria-label="닫기">×</button>
-            </header>
-
-            {overlay === "photo" && (
-              <div className="photo-step">
-                {cameraMode ? (
-                  <>
-                    {cameraError ? <div className="camera-error">{cameraError}</div> : <video muted playsInline ref={videoRef} />}
-                    <button className="big-action" disabled={Boolean(cameraError)} onClick={capturePhoto} type="button">촬영</button>
-                  </>
-                ) : (
-                  <>
-                    <div className="instant-photo">{photo ? <img src={photo} alt="선택한 음식" /> : <span>+</span>}</div>
-                    <div className="two-actions">
-                      <button onClick={() => setCameraMode(true)} type="button">지금 촬영</button>
-                      <button onClick={() => uploadRef.current?.click()} type="button">사진 업로드</button>
-                    </div>
-                    <input className="visually-hidden" ref={uploadRef} onChange={handleUpload} accept="image/*" type="file" />
-                  </>
-                )}
-              </div>
-            )}
-
-            {overlay === "time" && (
-              <div className="clock-picker">
-                <div className="clock-face"><span className="hand" /><b>{mealType}</b></div>
-                <div className="meal-buttons">{MEALS.map((item) => <button key={item} onClick={() => selectMeal(item)} type="button">{item}</button>)}</div>
-              </div>
-            )}
-
-            {overlay === "doodle" && (
-              <div className="magnet-board">
-                {DOODLES.map((item) => <button className={item.color} key={item.value} onClick={() => selectDoodle(item.value)} type="button"><span>{item.value}</span><small>{item.label}</small></button>)}
-              </div>
-            )}
-
-            {overlay === "details" && (
-              <form className="order-note" onSubmit={saveRecord}>
-                <label>날짜<input type="date" max={localDateString()} value={date} onChange={(event) => setDate(event.target.value)} /></label>
-                <label>음식<input required value={foodName} onChange={(event) => setFoodName(event.target.value)} /></label>
-                <label>메모<textarea rows={4} value={note} onChange={(event) => setNote(event.target.value)} /></label>
-                <div className="order-summary"><span>{mealType}</span><span>{doodle}</span><span>{photo ? "PHOTO ✓" : "NO PHOTO"}</span></div>
-                <button className="big-action" type="submit">SAVE</button>
-              </form>
-            )}
-
-            {overlay === "gallery" && (
-              <div className="archive-grid">
-                {records.length === 0 ? <div className="archive-empty">NO MEALS YET</div> : records.map((record, index) => (
-                  <article key={record.id}>
-                    <div>{record.photo ? <img src={record.photo} alt={record.foodName} /> : <span>{record.doodle}</span>}</div>
-                    <b>({index + 1})</b><small>{record.foodName}</small>
-                  </article>
-                ))}
-              </div>
-            )}
-
-            {overlay === "calendar" && (
-              <div className="retro-calendar">
-                <div className="month-switch"><button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>←</button><strong>{month.getFullYear()}</strong><button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>→</button></div>
-                <div className="week-labels">{"일월화수목금토".split("").map((day) => <span key={day}>{day}</span>)}</div>
-                <div className="calendar-cells">{cells.map((day, index) => {
-                  if (!day) return <i key={`blank-${index}`} />;
-                  const key = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                  const record = recordsByDate.get(key)?.[0];
-                  return <button className={selectedDate === key ? "selected" : ""} key={key} onClick={() => setSelectedDate(key)}><span>{day}</span>{record && <b>{record.doodle}</b>}</button>;
-                })}</div>
-                <div className="calendar-detail"><strong>{readableDate(selectedDate)}</strong>{selectedRecords.length ? selectedRecords.map((record) => <p key={record.id}>{record.doodle} {record.foodName} · {record.mealType}</p>) : <p>기록 없음</p>}</div>
-              </div>
-            )}
+            {step === "memo" && <form onSubmit={save} className="memo-form">
+              {photo && <img src={photo} alt="음식 미리보기" />}
+              <div className="tags"><span>{meal}</span><span>{food}</span></div>
+              <label>메모<textarea value={memo} onChange={e => setMemo(e.target.value)} placeholder="오늘의 한마디" rows={3} /></label>
+              <button className="primary" type="submit">저장</button>
+            </form>}
           </section>
-        </div>
-      )}
+        </div>}
+      </section>
     </main>
   );
 }

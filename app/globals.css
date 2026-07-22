@@ -1,170 +1,55 @@
 @import "tailwindcss";
 
-:root {
-  --yellow: #f8b719;
-  --red: #ef4328;
-  --green: #438d46;
-  --cream: #f4ddae;
-  --brown: #432513;
-  --ink: #171411;
-  --pink: #ea83ad;
-  --blue: #6aa6cf;
-}
-
-* { box-sizing: border-box; }
-body { margin: 0; overflow-x: hidden; background: #d9d4ca; color: var(--ink); font-family: Arial, "Apple SD Gothic Neo", sans-serif; }
-button, input, textarea { font: inherit; }
-button { min-height: 44px; cursor: pointer; color: inherit; }
-
-.kitchen-app {
-  position: relative;
-  width: min(100%, 430px);
-  min-height: 100dvh;
-  margin: 0 auto;
-  overflow: hidden;
-  background: var(--yellow);
-  border-right: 2px solid var(--ink);
-  border-left: 2px solid var(--ink);
-}
-
-.kitchen-header { display: flex; align-items: center; justify-content: space-between; height: 92px; padding: 14px 16px; border-bottom: 2px solid var(--ink); background: var(--yellow); }
-.brand-mark { font-family: Impact, Haettenschweiler, sans-serif; font-size: 25px; line-height: .76; letter-spacing: -1px; text-transform: uppercase; transform: rotate(-2deg); }
-.date-ticket { border: 2px solid var(--ink); background: var(--cream); padding: 8px 12px; font-size: 12px; font-weight: 800; transform: rotate(1.5deg); }
-
-.flow-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 2px solid var(--ink); background: var(--cream); }
-.flow-strip button { border: 0; border-right: 1px solid var(--ink); background: transparent; padding: 8px 2px; font-size: 11px; font-weight: 800; }
-.flow-strip button:last-child { border-right: 0; }
-.flow-strip button span { display: inline-grid; width: 18px; height: 18px; margin-right: 3px; place-items: center; border: 1px solid var(--ink); border-radius: 50%; font-size: 10px; }
-.flow-strip button.active { background: var(--red); color: white; }
-.flow-strip button.done { background: var(--green); color: white; }
-
-.kitchen-scene { position: relative; height: calc(100dvh - 137px); min-height: 590px; overflow: hidden; background: var(--yellow); }
-.wall-pattern { position: absolute; inset: 0 0 35%; opacity: .28; background-image: radial-gradient(var(--ink) 1px, transparent 1px); background-size: 19px 19px; }
-
-.wall-calendar { position: absolute; top: 28px; left: 22px; width: 105px; height: 118px; border: 3px solid var(--ink); background: white; box-shadow: 5px 5px 0 var(--red); transform: rotate(-2deg); }
-.wall-calendar::before { content: ""; position: absolute; top: -10px; left: 50%; width: 17px; height: 17px; border: 2px solid var(--ink); border-radius: 50%; background: var(--red); transform: translateX(-50%); }
-.wall-calendar span, .wall-calendar b, .wall-calendar small { display: block; }
-.wall-calendar span { font-family: Impact, sans-serif; font-size: 22px; }
-.wall-calendar b { font-size: 43px; line-height: 1; }
-.wall-calendar small { font-weight: 800; }
-
-.wall-clock { position: absolute; top: 34px; right: 28px; width: 92px; height: 92px; border: 4px solid var(--ink); border-radius: 50%; background: var(--cream); box-shadow: 5px 5px 0 var(--green); }
-.wall-clock i { position: absolute; top: 20px; left: 43px; width: 3px; height: 28px; transform-origin: bottom; transform: rotate(35deg); background: var(--ink); }
-.wall-clock b { position: absolute; right: 0; bottom: 20px; left: 0; font-size: 12px; }
-.wall-clock small { position: absolute; right: 0; bottom: -26px; left: 0; font-weight: 800; }
-
-.window-frame { position: absolute; top: 175px; left: 18px; display: grid; grid-template-columns: 1fr 1fr; width: 145px; height: 145px; border: 5px solid var(--brown); background: #7fc8d4; box-shadow: inset 0 -35px 0 #78a85b; }
-.window-frame::before, .window-frame::after { content: ""; position: absolute; background: var(--brown); }
-.window-frame::before { top: 50%; right: 0; left: 0; height: 4px; }
-.window-frame::after { top: 0; bottom: 0; left: 50%; width: 4px; }
-.window-frame div { position: relative; }
-.window-frame div::after { content: ""; position: absolute; bottom: 20px; left: 15px; width: 35px; height: 45px; border-radius: 60% 10% 50% 10%; background: #2b6c37; transform: rotate(-20deg); }
-
-.fridge { position: absolute; z-index: 2; top: 155px; right: 20px; width: 185px; height: 335px; border: 4px solid var(--ink); border-radius: 10px 10px 2px 2px; background: var(--cream); box-shadow: 8px 8px 0 var(--brown); }
-.fridge::after { content: ""; position: absolute; top: 54%; right: 0; left: 0; height: 3px; background: var(--ink); }
-.fridge-handle { position: absolute; z-index: 3; top: 42px; right: 12px; width: 7px; height: 70px; border-radius: 5px; background: var(--ink); }
-.fridge-magnets { position: absolute; top: 18px; left: 12px; display: grid; grid-template-columns: 1fr 1fr; width: 120px; height: 125px; border: 0; background: transparent; padding: 0; }
-.fridge-magnets span { display: grid; width: 38px; height: 38px; place-items: center; border: 2px solid var(--ink); border-radius: 50%; background: var(--yellow); font-size: 20px; transform: rotate(-5deg); }
-.fridge-magnets span:nth-child(2) { background: var(--red); transform: rotate(7deg); }
-.fridge-magnets span:nth-child(3) { background: var(--green); transform: rotate(5deg); }
-.fridge-magnets span:nth-child(4) { background: var(--pink); transform: rotate(-8deg); }
-.fridge-magnets small, .fridge-photo small { position: absolute; padding: 2px 5px; background: var(--ink); color: white; font-size: 10px; font-weight: 800; }
-.fridge-magnets small { right: 0; bottom: 0; }
-.fridge-photo { position: absolute; bottom: 26px; left: 29px; width: 108px; height: 112px; border: 3px solid var(--ink); background: white; padding: 8px 8px 20px; transform: rotate(3deg); }
-.fridge-photo img { width: 100%; height: 100%; object-fit: cover; }
-.fridge-photo > span { display: grid; width: 100%; height: 100%; place-items: center; background: var(--red); color: var(--cream); font-weight: 900; }
-.fridge-photo small { right: -12px; bottom: -10px; }
-
-.counter { position: absolute; right: 0; bottom: 0; left: 0; height: 185px; border-top: 5px solid var(--ink); background: var(--green); }
-.counter::after { content: ""; position: absolute; top: 24px; right: 0; left: 0; height: 4px; background: var(--ink); }
-.camera-object { position: absolute; z-index: 3; bottom: 72px; left: 23px; width: 104px; height: 78px; border: 4px solid var(--ink); border-radius: 8px; background: var(--red); box-shadow: 5px 5px 0 var(--cream); }
-.camera-object::before { content: ""; position: absolute; top: -16px; left: 12px; width: 36px; height: 17px; border: 3px solid var(--ink); background: var(--cream); }
-.camera-lens { position: absolute; top: 10px; left: 35px; width: 38px; height: 38px; border: 5px solid var(--ink); border-radius: 50%; background: var(--blue); }
-.camera-object b { position: absolute; right: 0; bottom: 4px; left: 0; font-size: 10px; }
-.camera-object em { position: absolute; top: -42px; left: -5px; width: 74px; padding: 5px; background: var(--yellow); border: 2px solid var(--ink); font-size: 11px; font-style: normal; font-weight: 900; transform: rotate(-8deg); }
-
-.plate-preview { position: absolute; z-index: 3; bottom: 44px; left: 145px; display: grid; width: 103px; height: 58px; place-items: center; overflow: hidden; border: 4px double var(--ink); border-radius: 50%; background: var(--cream); font-size: 30px; }
-.plate-preview img { width: 100%; height: 100%; object-fit: cover; }
-.memo-object { position: absolute; z-index: 3; right: 18px; bottom: 38px; width: 132px; height: 132px; border: 3px solid var(--ink); background: #fff7de; box-shadow: 5px 5px 0 var(--yellow); padding: 14px 8px 8px; text-align: left; transform: rotate(2deg); }
-.memo-object span { display: block; font-family: Impact, sans-serif; font-size: 18px; line-height: .92; }
-.memo-object i { display: block; margin-top: 25px; border-bottom: 2px solid var(--ink); font-size: 11px; font-style: normal; }
-.memo-object small { position: absolute; right: 8px; bottom: 7px; font-weight: 800; }
-
-.attention { animation: nudge 1.2s infinite; outline: 4px solid white; outline-offset: 3px; }
-@keyframes nudge { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
-
-.overlay-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: end center; background: rgb(19 15 10 / 72%); padding: 10px; }
-.retro-sheet { width: min(100%, 430px); max-height: 92dvh; overflow: auto; border: 3px solid var(--ink); border-radius: 18px 18px 4px 4px; background: var(--yellow); box-shadow: 0 -7px 0 var(--ink); padding: 18px 16px calc(20px + env(safe-area-inset-bottom)); }
-.sheet-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
-.sheet-header span { font-size: 11px; font-weight: 900; letter-spacing: 1px; }
-.sheet-header h2 { margin: 2px 0 0; font-family: Impact, sans-serif; font-size: 34px; letter-spacing: .5px; }
-.sheet-close { width: 46px; border: 3px solid var(--ink); background: var(--cream); font-size: 31px; line-height: 1; }
-
-.instant-photo { display: grid; aspect-ratio: 4 / 3; place-items: center; border: 4px solid var(--ink); background: var(--cream); font-size: 48px; }
-.instant-photo img, .photo-step video { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 4px solid var(--ink); background: #111; }
-.two-actions, .meal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-.two-actions button, .meal-buttons button, .month-switch button { border: 3px solid var(--ink); background: var(--cream); font-weight: 900; }
-.big-action { width: 100%; margin-top: 14px; border: 3px solid var(--ink); background: var(--red); color: white; padding: 13px; font-weight: 900; letter-spacing: 1px; }
-.big-action:disabled { opacity: .45; }
-.camera-error { display: grid; aspect-ratio: 4 / 3; place-items: center; border: 3px solid var(--ink); background: var(--cream); }
-
-.clock-picker { padding: 6px 5px 12px; }
-.clock-face { position: relative; display: grid; width: 210px; height: 210px; margin: 0 auto 16px; place-items: center; border: 8px solid var(--ink); border-radius: 50%; background: var(--cream); box-shadow: 8px 8px 0 var(--green); }
-.clock-face::before { content: "12"; position: absolute; top: 13px; font-weight: 900; }
-.clock-face::after { content: "6"; position: absolute; bottom: 13px; font-weight: 900; }
-.clock-face .hand { position: absolute; top: 42px; left: 100px; width: 5px; height: 65px; transform-origin: bottom; transform: rotate(35deg); background: var(--red); }
-.clock-face b { font-size: 22px; }
-.meal-buttons { grid-template-columns: repeat(2, 1fr); }
-.meal-buttons button:nth-child(1) { background: var(--yellow); }
-.meal-buttons button:nth-child(2) { background: var(--red); color: white; }
-.meal-buttons button:nth-child(3) { background: var(--green); color: white; }
-
-.magnet-board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; padding: 12px; border: 4px solid var(--ink); background: var(--cream); }
-.magnet-board button { aspect-ratio: 1.35; border: 3px solid var(--ink); border-radius: 48% 43% 46% 41%; box-shadow: 5px 5px 0 var(--ink); transform: rotate(-2deg); }
-.magnet-board button:nth-child(even) { transform: rotate(2deg); }
-.magnet-board span { display: block; font-size: 42px; }
-.magnet-board small { font-weight: 900; }
-.yellow { background: var(--yellow); } .red { background: var(--red); } .green { background: var(--green); } .cream { background: var(--cream); } .pink { background: var(--pink); } .blue { background: var(--blue); }
-
-.order-note { border: 3px solid var(--ink); background: #fff7de; padding: 18px; box-shadow: 7px 7px 0 var(--red); }
-.order-note label { display: block; margin-bottom: 16px; font-weight: 900; }
-.order-note input, .order-note textarea { display: block; width: 100%; min-height: 46px; margin-top: 5px; border: 0; border-bottom: 3px solid var(--ink); border-radius: 0; background: transparent; padding: 8px 2px; }
-.order-note textarea { resize: vertical; }
-.order-summary { display: flex; gap: 7px; flex-wrap: wrap; }
-.order-summary span { border: 2px solid var(--ink); background: var(--yellow); padding: 6px 9px; font-size: 11px; font-weight: 900; transform: rotate(-2deg); }
-
-.gallery-sheet { min-height: 86dvh; background: #a72214; color: #75dbc8; }
-.gallery-sheet .sheet-close { color: var(--ink); }
-.archive-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 7px; }
-.archive-grid article > div { display: grid; aspect-ratio: 1; place-items: center; overflow: hidden; border: 2px solid var(--ink); background: var(--cream); font-size: 36px; }
-.archive-grid article img { width: 100%; height: 100%; object-fit: cover; }
-.archive-grid article b, .archive-grid article small { display: block; text-align: center; }
-.archive-grid article b { padding: 6px 0 2px; font-family: monospace; }
-.archive-grid article small { overflow: hidden; color: var(--cream); text-overflow: ellipsis; white-space: nowrap; }
-.archive-empty { grid-column: 1 / -1; padding: 32dvh 0 0; text-align: center; font-family: monospace; font-size: 19px; }
-
-.retro-calendar { border: 3px solid var(--ink); background: white; padding: 12px; }
-.month-switch { display: grid; grid-template-columns: 46px 1fr 46px; align-items: center; gap: 8px; margin-bottom: 9px; }
-.month-switch strong { text-align: center; }
-.week-labels, .calendar-cells { display: grid; grid-template-columns: repeat(7, 1fr); }
-.week-labels span { padding: 7px 0; text-align: center; font-size: 11px; font-weight: 900; }
-.calendar-cells { border-top: 2px solid var(--ink); border-left: 2px solid var(--ink); }
-.calendar-cells button, .calendar-cells i { min-height: 50px; border: 0; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: white; padding: 3px; font-style: normal; }
-.calendar-cells button:nth-child(5n) { background: var(--red); }
-.calendar-cells button:nth-child(4n) { background: var(--blue); }
-.calendar-cells button.selected { outline: 4px solid var(--pink); outline-offset: -5px; }
-.calendar-cells button span { display: block; font-size: 10px; text-align: right; }
-.calendar-cells button b { font-size: 19px; }
-.calendar-detail { margin-top: 12px; border-top: 3px solid var(--ink); padding-top: 10px; }
-.calendar-detail p { margin: 7px 0 0; }
-
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); }
-
-@media (max-height: 720px) {
-  .kitchen-header { height: 76px; }
-  .kitchen-scene { height: calc(100dvh - 121px); min-height: 520px; }
-  .fridge { top: 135px; height: 305px; }
-  .window-frame { top: 150px; }
-}
-
-@media (prefers-reduced-motion: reduce) { .attention { animation: none; } }
+:root { --ink:#332018; --cream:#fff1c5; --mustard:#e6a527; --red:#d94a33; --green:#477d58; }
+* { box-sizing:border-box; }
+html, body { margin:0; min-height:100%; background:#201812; color:var(--ink); font-family:"Arial Rounded MT Bold","Apple SD Gothic Neo",sans-serif; }
+button, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; }
+.app-shell { min-height:100dvh; display:grid; place-items:center; }
+.kitchen { position:relative; width:min(100vw,390px); height:100dvh; max-height:844px; min-height:660px; overflow:hidden; background:#d7a52f; isolation:isolate; }
+.kitchen-bg { position:absolute; z-index:-2; inset:0; width:100%; height:100%; object-fit:cover; }
+.kitchen::after { content:""; position:absolute; z-index:-1; inset:0; pointer-events:none; box-shadow:inset 0 0 0 2px rgb(49 29 18 / .8), inset 0 0 70px rgb(49 29 18 / .18); }
+.logo { position:absolute; top:4.2%; left:5%; margin:0; color:#51291b; font-size:28px; line-height:.85; letter-spacing:-2px; text-shadow:2px 2px 0 #f5cd65; transform:rotate(-3deg); }
+.lively-sprite { background-image:url('/camera-clock-lively-transparent.png'); background-size:200% 200%; background-repeat:no-repeat; border:0; background-color:transparent; }
+.sprite-object { background-image:url('/remaining-kitchen-objects-transparent.png'); background-size:200% 200%; background-repeat:no-repeat; }
+.calendar-prop { position:absolute; top:13%; left:10%; width:88px; aspect-ratio:1; background-position:0 0; filter:drop-shadow(2px 3px 0 rgb(50 27 18 / .35)); }
+.clock-prop { position:absolute; top:10%; right:7%; width:84px; aspect-ratio:1; background-position:0 100%; pointer-events:none; filter:drop-shadow(2px 3px 0 rgb(50 27 18 / .3)); }
+.clock-prop.active { background-position:100% 100%; animation:bob .8s infinite alternate; }
+.camera-prop { position:absolute; z-index:2; left:50%; bottom:17%; width:126px; aspect-ratio:1; transform:translateX(-50%); background-position:0 0; filter:drop-shadow(3px 5px 0 rgb(50 27 18 / .32)); }
+.camera-prop.active { background-position:100% 0; }
+.camera-prop:disabled { cursor:default; }
+.camera-prop.ready { animation:bob .75s infinite alternate; }
+@keyframes bob { to { translate:0 -6px; } }
+.polaroid { position:absolute; left:8%; bottom:17%; width:76px; height:90px; padding:6px 6px 18px; background:#fff4d4; border:2px solid var(--ink); transform:rotate(-7deg); box-shadow:3px 4px 0 rgb(45 26 16 / .3); }
+.polaroid img { width:100%; height:100%; object-fit:cover; }
+.fridge-hint { position:absolute; top:37%; left:21%; color:#ef603f; font-size:34px; animation:bob .7s infinite alternate; }
+.prompt { position:absolute; z-index:3; right:0; bottom:4%; left:0; display:flex; flex-direction:column; align-items:center; gap:4px; color:#fff9dc; text-shadow:2px 2px 0 #522b1d; font-size:14px; font-weight:900; }
+.prompt i { font-size:22px; font-style:normal; }
+.prompt b { font-size:20px; }
+.prompt button { margin-top:8px; min-height:42px; padding:6px 18px; border:2px solid var(--ink); border-radius:3px; background:var(--cream); box-shadow:3px 3px 0 var(--ink); font-weight:900; }
+.shade { position:absolute; z-index:10; inset:0; display:flex; align-items:flex-end; background:rgb(38 24 15 / .62); padding:12px 10px calc(12px + env(safe-area-inset-bottom)); }
+.paper { width:100%; max-height:88%; overflow:auto; padding:14px; border:3px solid var(--ink); border-radius:10px 10px 3px 3px; background:#fff0bd; box-shadow:6px 7px 0 var(--ink); }
+.paper header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.paper header small { padding:4px 9px; background:var(--red); color:white; border:2px solid var(--ink); font-weight:900; }
+.paper header button { width:40px; height:40px; border:2px solid var(--ink); background:#fff8dd; font-size:26px; line-height:1; }
+.photo-step video { display:block; width:100%; aspect-ratio:4/3; object-fit:cover; background:#1d1814; border:3px solid var(--ink); }
+.camera-hero { width:170px; aspect-ratio:1; margin:-24px auto -18px; background-position:100% 0; }
+.primary,.secondary { width:100%; min-height:50px; margin-top:9px; border:3px solid var(--ink); font-weight:900; box-shadow:3px 3px 0 var(--ink); }
+.primary { background:var(--red); color:white; }
+.secondary { background:#f7c94d; }
+.choice-grid { display:grid; gap:9px; }
+.choice-grid button { min-height:86px; border:2px solid var(--ink); background:#f8d665; font-weight:900; }
+.meal-grid { grid-template-columns:repeat(2,1fr); }
+.food-grid { grid-template-columns:repeat(4,1fr); gap:7px; }
+.food-grid button { min-width:0; min-height:73px; padding:3px; font-size:10px; }
+.food-sprite { display:block; width:56px; height:50px; margin:0 auto 2px; background-image:url('/food-doodles-transparent-final.png'); background-size:400% 400%; background-repeat:no-repeat; }
+.food-grid .food-sprite { width:50px; height:48px; }
+.meal-0 { background-position:0 0; }.meal-1 { background-position:33.333% 0;}.meal-2 { background-position:66.666% 0;}.meal-3 { background-position:100% 0;}
+.memo-form img { display:block; width:100%; height:160px; object-fit:cover; border:3px solid var(--ink); }
+.tags { display:flex; gap:8px; margin:10px 0; }
+.tags span { padding:5px 10px; border:2px solid var(--ink); background:#f6c849; font-weight:900; transform:rotate(-2deg); }
+.memo-form label { font-weight:900; }
+.memo-form textarea { width:100%; margin-top:5px; padding:10px; resize:none; border:2px solid var(--ink); border-radius:0; background:#fffaf0; }
+@media (min-width:500px) { .kitchen { border:2px solid #4a3024; box-shadow:0 0 60px #000; } }
+@media (max-height:700px) { .kitchen { min-height:100dvh; } .camera-prop { bottom:14%; width:110px; } .prompt { bottom:2%; } }
+@media (prefers-reduced-motion:reduce) { .ready,.clock-prop.active,.fridge-hint { animation:none; } }

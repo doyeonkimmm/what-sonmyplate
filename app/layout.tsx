@@ -1,40 +1,12 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import "./globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("host") ?? "localhost:3000";
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
-  const origin = `${protocol}://${host}`;
-  const title = "오늘모먹지 | 개인 식사 기록";
-  const description = "사진과 손그림으로 간단하게 남기는 나만의 식사 기록장";
+export const metadata: Metadata = {
+  title: "오늘 뭐 먹지?",
+  description: "사진과 손그림으로 남기는 나의 식사 기록",
+  openGraph: { title: "오늘 뭐 먹지?", description: "사진과 손그림으로 남기는 나의 식사 기록", images: ["/og.png"] },
+};
 
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: [{ url: `${origin}/og.png`, width: 1536, height: 1024 }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [`${origin}/og.png`],
-    },
-  };
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="ko">
-      <body>{children}</body>
-    </html>
-  );
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="ko"><body>{children}</body></html>;
 }
