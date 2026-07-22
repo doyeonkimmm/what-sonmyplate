@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
 type Step = "photo" | "time" | "food" | "memo";
 type Meal = "아침" | "점심" | "저녁" | "간식";
+type SavedRecord = { id: number; photo: string; meal: Meal; food: string; memo: string; date: string };
 
 const meals: Meal[] = ["아침", "점심", "저녁", "간식"];
 const foods = ["밥", "면", "국", "빵", "고기", "생선", "샐러드", "과일", "피자", "버거", "케이크", "아이스크림", "음료", "커피", "과자", "기타"];
@@ -17,6 +18,8 @@ export default function Home() {
   const [food, setFood] = useState("");
   const [memo, setMemo] = useState("");
   const [done, setDone] = useState(false);
+  const [recordsOpen, setRecordsOpen] = useState(false);
+  const [records, setRecords] = useState<SavedRecord[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +40,10 @@ export default function Home() {
       streamRef.current = null;
     };
   }, [camera]);
+
+  useEffect(() => {
+    setRecords(JSON.parse(localStorage.getItem("meal-records") || "[]"));
+  }, []);
 
   function next(nextStep: Step) {
     setStep(nextStep);
@@ -71,8 +78,9 @@ export default function Home() {
   function save(event: FormEvent) {
     event.preventDefault();
     const record = { id: Date.now(), photo, meal, food, memo, date: new Date().toISOString() };
-    const records = JSON.parse(localStorage.getItem("meal-records") || "[]");
-    localStorage.setItem("meal-records", JSON.stringify([record, ...records].slice(0, 30)));
+    const nextRecords = [record, ...records].slice(0, 30);
+    localStorage.setItem("meal-records", JSON.stringify(nextRecords));
+    setRecords(nextRecords);
     setOpen(false);
     setDone(true);
   }
@@ -85,9 +93,11 @@ export default function Home() {
     <main className="app-shell">
       <section className="kitchen" aria-label="오늘 뭐 먹지 기록 화면">
         <img className="kitchen-bg" src="/kitchen-table-background.png" alt="픽셀 아트 부엌" />
-        <h1 className="logo">오늘<br />뭐 먹지?</h1>
-
-        <div className="calendar-prop sprite-object" aria-hidden="true" />
+        <div className="decor decor-plant" aria-hidden="true" /><div className="decor decor-tomato" aria-hidden="true" />
+        <div className="decor decor-pan" aria-hidden="true" /><div className="decor decor-mitt" aria-hidden="true" />
+        <div className="decor decor-tools" aria-hidden="true" /><div className="decor decor-fruit" aria-hidden="true" />
+        <div className="decor decor-flowers" aria-hidden="true" /><div className="decor decor-bunting" aria-hidden="true" />
+        <button className="calendar-prop sprite-object" onClick={() => setRecordsOpen(true)} aria-label="식사 기록 보기"><span>{records.length || ""}</span></button>
         <div className={`clock-prop lively-sprite ${step === "time" ? "active" : ""}`} aria-hidden="true" />
 
         <button className={`camera-prop lively-sprite ${step === "photo" && !done ? "active ready" : ""}`} onClick={() => { if (step === "photo" && !done) setOpen(true); }} disabled={step !== "photo" || done} aria-label="카메라를 눌러 기록 시작" />
@@ -108,7 +118,7 @@ export default function Home() {
               <input ref={inputRef} type="file" accept="image/*" onChange={upload} hidden />
             </div>}
 
-            {step === "time" && <div className="choice-grid meal-grid">{meals.map((item, index) => <button key={item} onClick={() => { setMeal(item); next("food"); }}><span className={`food-sprite meal-${index}`} />{item}</button>)}</div>}
+            {step === "time" && <div className="choice-grid meal-grid">{meals.map((item, index) => <button key={item} onClick={() => { setMeal(item); next("food"); }}><span className={`ui-sprite meal-${index}`} />{item}</button>)}</div>}
 
             {step === "food" && <div className="choice-grid food-grid">{foods.map((item, index) => <button key={item} onClick={() => { setFood(item); next("memo"); }}><span className="food-sprite" style={{ backgroundPosition: `${(index % 4) * 33.333}% ${Math.floor(index / 4) * 33.333}%` }} />{item}</button>)}</div>}
 
@@ -118,6 +128,18 @@ export default function Home() {
               <label>메모<textarea value={memo} onChange={e => setMemo(e.target.value)} placeholder="오늘의 한마디" rows={3} /></label>
               <button className="primary" type="submit">저장</button>
             </form>}
+          </section>
+        </div>}
+
+        {recordsOpen && <div className="shade">
+          <section className="paper record-paper" role="dialog" aria-modal="true" aria-label="식사 기록">
+            <header><strong>나의 식사 기록</strong><button onClick={() => setRecordsOpen(false)} aria-label="닫기">×</button></header>
+            <div className="record-grid">
+              {records.length ? records.map(record => <article key={record.id}>
+                {record.photo ? <img src={record.photo} alt={record.food} /> : <div className="empty-photo" />}
+                <b>{record.food}</b><small>{record.meal} · {new Date(record.date).toLocaleDateString("ko-KR")}</small>
+              </article>) : <p className="empty-record">아직 기록이 없어요</p>}
+            </div>
           </section>
         </div>}
       </section>
