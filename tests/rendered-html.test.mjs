@@ -21,8 +21,8 @@ test("server-renders the pixel kitchen start screen", async () => {
 
   const html = await response.text();
   assert.match(html, /오늘 뭐 먹지/);
-  assert.match(html, /카메라를 눌러 시작/);
-  assert.match(html, /kitchen-table-background\.png/);
+  assert.match(html, /카메라를 눌러 기록하기/);
+  assert.match(html, /frame-1\.svg/);
   assert.match(html, /camera-prop/);
   assert.doesNotMatch(html, /flow-strip|fridge-magnets/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);

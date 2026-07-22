@@ -2,7 +2,7 @@
 
 :root { --ink:#332018; --cream:#fff1c5; --mustard:#e6a527; --red:#d94a33; --green:#477d58; }
 * { box-sizing:border-box; }
-html, body { margin:0; min-height:100%; background:#201812; color:var(--ink); font-family:"Arial Rounded MT Bold","Apple SD Gothic Neo",sans-serif; }
+html, body { margin:0; min-height:100%; background:#201812; color:var(--ink); font-family:Inter,"Pretendard","Noto Sans KR","Apple SD Gothic Neo",sans-serif; }
 button, textarea { font:inherit; color:inherit; }
 button { cursor:pointer; }
 .app-shell { min-height:100dvh; display:grid; place-items:center; }
@@ -11,11 +11,10 @@ button { cursor:pointer; }
 .kitchen::after { content:""; position:absolute; z-index:-1; inset:0; pointer-events:none; box-shadow:inset 0 0 0 2px rgb(49 29 18 / .8), inset 0 0 70px rgb(49 29 18 / .18); }
 .lively-sprite { background-image:url('/camera-clock-lively-transparent.png'); background-size:200% 200%; background-repeat:no-repeat; border:0; background-color:transparent; }
 .sprite-object { background-image:url('/remaining-kitchen-objects-transparent.png'); background-size:200% 200%; background-repeat:no-repeat; }
-.calendar-prop { position:absolute; z-index:3; top:35%; left:13%; width:68px; aspect-ratio:1; border:0; background-color:transparent; background-position:0 0; filter:drop-shadow(2px 3px 0 rgb(50 27 18 / .35)); transform:rotate(-4deg); }
-.calendar-prop span { position:absolute; top:43%; left:50%; transform:translateX(-50%); color:#b83b2d; font-size:18px; font-weight:900; }
-.clock-prop { position:absolute; top:10%; right:7%; width:84px; aspect-ratio:1; background-position:0 100%; pointer-events:none; filter:drop-shadow(2px 3px 0 rgb(50 27 18 / .3)); }
-.clock-prop.active { background-position:100% 100%; animation:bob .8s infinite alternate; }
-.camera-prop { position:absolute; z-index:4; top:62%; left:50%; width:146px; aspect-ratio:1; transform:translate(-50%,-50%); background-position:0 0; filter:drop-shadow(3px 5px 0 rgb(50 27 18 / .32)); }
+.calendar-prop { position:absolute; z-index:3; top:36.5%; left:16%; width:72px; aspect-ratio:1; border:0; background-color:transparent; background-position:0 0; filter:drop-shadow(1px 3px 0 rgb(50 27 18 / .28)); transform:rotate(-3deg); }
+.calendar-prop::after { content:""; position:absolute; top:7px; left:50%; width:9px; height:9px; border-radius:50%; background:#e74b36; box-shadow:0 1px 0 #572719; transform:translateX(-50%); }
+.calendar-prop span { position:absolute; top:43%; left:50%; transform:translateX(-50%); color:#b83b2d; font-size:17px; font-weight:800; }
+.camera-prop { position:absolute; z-index:4; top:65.5%; left:65%; width:140px; aspect-ratio:1; transform:translate(-50%,-50%); background-position:0 0; filter:drop-shadow(2px 5px 0 rgb(50 27 18 / .28)); }
 .camera-prop.active { background-position:100% 0; }
 .camera-prop:disabled { cursor:default; }
 .camera-prop.ready { animation:bob .75s infinite alternate; }
@@ -23,19 +22,10 @@ button { cursor:pointer; }
 .polaroid { position:absolute; left:8%; bottom:17%; width:76px; height:90px; padding:6px 6px 18px; background:#fff4d4; border:2px solid var(--ink); transform:rotate(-7deg); box-shadow:3px 4px 0 rgb(45 26 16 / .3); }
 .polaroid img { width:100%; height:100%; object-fit:cover; }
 .fridge-hint { position:absolute; top:37%; left:21%; color:#ef603f; font-size:34px; animation:bob .7s infinite alternate; }
-.decor { position:absolute; z-index:1; background-image:url('/kitchen-decorations-transparent-final.png'); background-size:400% 300%; background-repeat:no-repeat; pointer-events:none; filter:drop-shadow(2px 3px 0 rgb(48 26 16 / .22)); }
-.decor-plant { top:3%; left:3%; width:67px; height:75px; background-position:0 0; }
-.decor-tomato { top:3%; right:4%; width:65px; height:75px; background-position:100% 0; transform:rotate(2deg); }
-.decor-pan { top:26%; right:-2%; width:70px; height:84px; background-position:0 50%; transform:rotate(12deg); }
-.decor-mitt { top:45%; right:20%; width:52px; height:64px; background-position:33.333% 50%; transform:rotate(-8deg); }
-.decor-tools { top:43%; right:3%; width:58px; height:68px; background-position:66.666% 50%; }
-.decor-fruit { top:52%; right:2%; width:76px; height:72px; background-position:100% 50%; }
-.decor-flowers { top:18%; left:40%; width:48px; height:60px; background-position:33.333% 100%; }
-.decor-bunting { top:24%; left:42%; width:104px; height:46px; background-position:100% 100%; }
-.prompt { position:absolute; z-index:3; right:0; bottom:4%; left:0; display:flex; flex-direction:column; align-items:center; gap:4px; color:#fff9dc; text-shadow:2px 2px 0 #522b1d; font-size:14px; font-weight:900; }
-.prompt i { font-size:22px; font-style:normal; }
-.prompt b { font-size:20px; }
-.prompt button { margin-top:8px; min-height:42px; padding:6px 18px; border:2px solid var(--ink); border-radius:3px; background:var(--cream); box-shadow:3px 3px 0 var(--ink); font-weight:900; }
+.prompt { position:absolute; z-index:5; right:0; bottom:5.5%; left:0; display:flex; flex-direction:column; align-items:center; gap:7px; color:#3b281e; font-size:12px; font-weight:650; letter-spacing:-.15px; }
+.prompt span,.prompt b { padding:9px 14px; border:1px solid rgb(74 45 30 / .2); border-radius:999px; background:rgb(255 247 221 / .88); box-shadow:0 3px 12px rgb(55 33 21 / .14); backdrop-filter:blur(4px); }
+.prompt b { font-size:12px; }
+.prompt button { min-height:38px; padding:5px 16px; border:1px solid rgb(74 45 30 / .4); border-radius:999px; background:#fff7dd; box-shadow:0 3px 10px rgb(55 33 21 / .15); font-size:12px; font-weight:650; }
 .shade { position:absolute; z-index:10; inset:0; display:flex; align-items:flex-end; background:rgb(38 24 15 / .62); padding:12px 10px calc(12px + env(safe-area-inset-bottom)); }
 .paper { width:100%; max-height:88%; overflow:auto; padding:14px; border:3px solid var(--ink); border-radius:10px 10px 3px 3px; background:#fff0bd; box-shadow:6px 7px 0 var(--ink); }
 .paper header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
@@ -69,5 +59,5 @@ button { cursor:pointer; }
 .record-grid b { margin-top:5px; }.record-grid small { margin-top:2px; font-size:10px; }
 .empty-record { grid-column:1/-1; padding:80px 0; text-align:center; font-weight:900; }
 @media (min-width:500px) { .kitchen { border:2px solid #4a3024; box-shadow:0 0 60px #000; } }
-@media (max-height:700px) { .kitchen { min-height:100dvh; } .camera-prop { width:128px; } .prompt { bottom:2%; } }
-@media (prefers-reduced-motion:reduce) { .ready,.clock-prop.active,.fridge-hint { animation:none; } }
+@media (max-height:700px) { .kitchen { min-height:100dvh; } .camera-prop { width:125px; } .prompt { bottom:2%; } }
+@media (prefers-reduced-motion:reduce) { .ready,.fridge-hint { animation:none; } }

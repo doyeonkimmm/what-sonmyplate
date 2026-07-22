@@ -92,13 +92,8 @@ export default function Home() {
   return (
     <main className="app-shell">
       <section className="kitchen" aria-label="오늘 뭐 먹지 기록 화면">
-        <img className="kitchen-bg" src="/kitchen-table-background.png" alt="픽셀 아트 부엌" />
-        <div className="decor decor-plant" aria-hidden="true" /><div className="decor decor-tomato" aria-hidden="true" />
-        <div className="decor decor-pan" aria-hidden="true" /><div className="decor decor-mitt" aria-hidden="true" />
-        <div className="decor decor-tools" aria-hidden="true" /><div className="decor decor-fruit" aria-hidden="true" />
-        <div className="decor decor-flowers" aria-hidden="true" /><div className="decor decor-bunting" aria-hidden="true" />
+        <img className="kitchen-bg" src="/frame-1.svg" alt="픽셀 아트 부엌" />
         <button className="calendar-prop sprite-object" onClick={() => setRecordsOpen(true)} aria-label="식사 기록 보기"><span>{records.length || ""}</span></button>
-        <div className={`clock-prop lively-sprite ${step === "time" ? "active" : ""}`} aria-hidden="true" />
 
         <button className={`camera-prop lively-sprite ${step === "photo" && !done ? "active ready" : ""}`} onClick={() => { if (step === "photo" && !done) setOpen(true); }} disabled={step !== "photo" || done} aria-label="카메라를 눌러 기록 시작" />
 
@@ -106,7 +101,7 @@ export default function Home() {
         {step === "food" && <div className="fridge-hint" aria-hidden="true">★</div>}
 
         <div className="prompt" aria-live="polite">
-          {done ? <><b>기록 완료!</b><button onClick={reset}>새로 기록</button></> : <><span>{step === "photo" ? "카메라를 눌러 시작" : step === "time" ? "시간을 골라주세요" : step === "food" ? "음식을 골라주세요" : "메모를 남겨주세요"}</span><i>{step === "photo" ? "↑" : ""}</i></>}
+          {done ? <><b>기록이 저장됐어요</b><button onClick={reset}>새 기록</button></> : <span>{step === "photo" ? "카메라를 눌러 기록하기" : step === "time" ? "시간을 선택해 주세요" : step === "food" ? "음식을 선택해 주세요" : "메모를 남겨 주세요"}</span>}
         </div>
 
         {open && <div className="shade">
