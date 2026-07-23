@@ -343,13 +343,14 @@ button { cursor:pointer; }
   gap:8px 10px;
   margin-top:17px;
 }
-.choice-label { font-size:16px; }
+.choice-label { font-size:17px; line-height:1.15; }
 .choice-options {
   width:100%;
   display:grid;
   gap:6px;
 }
-.meal-type-field .choice-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.meal-type-field .choice-options { display:block; }
+.meal-buttons { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
 .visibility-field .choice-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .choice-options button { width:100%; margin:0; }
 .choice-field>label {
@@ -357,6 +358,28 @@ button { cursor:pointer; }
   margin:0;
   font-size:11px;
 }
+.expense-inline {
+  width:100%;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:7px;
+  margin-top:8px;
+  font-size:13px;
+}
+.expense-inline input {
+  width:100%;
+  min-width:0;
+  height:39px;
+  padding:6px 9px;
+  border:2.5px solid var(--ink);
+  border-radius:2px 4px 1px 3px/3px 1px 4px 2px;
+  outline:0;
+  background:#f1f1ef;
+  font-size:13px;
+  text-align:right;
+}
+.expense-inline b { font-weight:400; }
 
 /* 기록장 프레임을 더보기 목록과 같은 잉크 무게로 통일 */
 .journal-header::after { height:3px; opacity:1; }
