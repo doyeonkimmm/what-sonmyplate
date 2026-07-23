@@ -111,7 +111,8 @@ button { cursor:pointer; }
 .record-card figcaption small { display:block; overflow:hidden; font-size:10px; line-height:25px; white-space:nowrap; text-overflow:ellipsis; }
 
 .photo-layer { position:absolute; z-index:20; inset:0; overflow-y:auto; background:var(--paper); animation:layer-in .25s ease-out both; }
-.photo-layer,.photo-layer button,.photo-layer input,.photo-layer textarea { font-weight:800; }
+.photo-layer,.photo-layer button,.photo-layer input,.photo-layer textarea { font-weight:500; }
+.photo-layer b,.photo-layer strong { font-weight:500; }
 .photo-layer .photo-drop b { font-size:34px; }
 .photo-layer .photo-drop small { font-size:18px; }
 .photo-layer .line-field,.photo-layer .memo-field { font-size:26px; }
@@ -162,8 +163,9 @@ button { cursor:pointer; }
 .more-drawer nav>a::after,.more-drawer nav>button::after { content:"›"; font-family:"KimBold"; font-size:24px; }
 .more-drawer .account-row span { max-width:135px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .more-drawer .account-row small { margin-left:auto; margin-right:5px; font-size:10px; }
-.drawer-panel { padding:18px 14px; font-size:14px; }
-.drawer-panel h2 { margin:0 0 18px; font-size:28px; font-weight:400; }
+.drawer-panel { padding:18px 14px; font-size:14px; font-weight:500; }
+.drawer-panel button,.drawer-panel input,.drawer-panel textarea,.drawer-panel b,.drawer-panel strong,.drawer-panel h3 { font-weight:500; }
+.drawer-panel h2 { margin:0 0 18px; font-size:28px; font-weight:800; }
 .drawer-panel form { display:flex; gap:6px; }
 .drawer-panel form input { min-width:0; flex:1; font-size:14px; }
 .drawer-panel form button,.spin-button { min-width:44px; border:2px solid var(--ink); background:var(--yellow); font-size:14px; }
