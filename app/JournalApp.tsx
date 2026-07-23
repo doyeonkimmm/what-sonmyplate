@@ -421,21 +421,23 @@ export default function JournalApp({ user }: { user: User }) {
               <label className="line-field"><span>날짜 &amp; 시간</span><div><input type="date" value={formDate} onChange={(event) => setFormDate(event.target.value)} /><input type="time" value={formTime} onChange={(event) => setFormTime(event.target.value)} /></div></label>
               <label className="line-field"><span>위치</span><input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="자동 입력 또는 직접 작성" /></label>
               <label className="line-field"><span>음식 이름</span><input value={food} onChange={(event) => setFood(event.target.value)} placeholder="무엇을 먹었나요?" /></label>
-              <fieldset className="meal-type-field">
-                <legend>식사 유형</legend>
-                <div>
+              <div className="meal-type-field choice-field">
+                <span className="choice-label">식사 유형</span>
+                <div className="choice-options">
                   <button type="button" className={mealType === "delivery" ? "active" : ""} onClick={() => setMealType("delivery")}>배달</button>
                   <button type="button" className={mealType === "dining" ? "active" : ""} onClick={() => setMealType("dining")}>외식</button>
                   <button type="button" className={mealType === "home" ? "active" : ""} onClick={() => setMealType("home")}>집밥</button>
                 </div>
-              </fieldset>
+              </div>
               {mealType !== "home" && <label className="line-field"><span>지출</span><input type="number" min="0" step="100" value={expense} onChange={(event) => setExpense(event.target.value)} placeholder="얼마를 썼나요?" /></label>}
-              <fieldset className="visibility-field">
-                <legend>공개 범위</legend>
-                <button type="button" className={visibility === "private" ? "active" : ""} onClick={() => setVisibility("private")}>나만 보기</button>
-                <button type="button" className={visibility === "friends" ? "active" : ""} onClick={() => setVisibility("friends")}>친구에게 공개</button>
+              <div className="visibility-field choice-field">
+                <span className="choice-label">공개 범위</span>
+                <div className="choice-options">
+                  <button type="button" className={visibility === "private" ? "active" : ""} onClick={() => setVisibility("private")}>나만 보기</button>
+                  <button type="button" className={visibility === "friends" ? "active" : ""} onClick={() => setVisibility("friends")}>친구에게 공개</button>
+                </div>
                 <label><input type="checkbox" checked={showLocation} onChange={(event) => setShowLocation(event.target.checked)} /> 위치 표시</label>
-              </fieldset>
+              </div>
               <label className="memo-field"><span>한 줄 메모</span><textarea rows={3} value={memo} onChange={(event) => setMemo(event.target.value)} placeholder="이 순간을 한마디로…" /></label>
               <div className="form-actions">
                 <button type="button" onClick={() => { setPhotoOpen(false); resetPhotoForm(); }}>취소</button>

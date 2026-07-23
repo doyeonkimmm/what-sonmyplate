@@ -336,6 +336,36 @@ button { cursor:pointer; }
   margin:0;
 }
 
+.choice-field {
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  align-items:center;
+  gap:8px 10px;
+  margin-top:17px;
+}
+.choice-label { font-size:16px; }
+.choice-options {
+  width:100%;
+  display:grid;
+  gap:6px;
+}
+.meal-type-field .choice-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.visibility-field .choice-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.choice-options button { width:100%; margin:0; }
+.choice-field>label {
+  grid-column:2;
+  margin:0;
+  font-size:11px;
+}
+
+/* 기록장 프레임을 더보기 목록과 같은 잉크 무게로 통일 */
+.journal-header::after { height:3px; opacity:1; }
+.day-sheet::after {
+  width:3px;
+  opacity:1;
+  clip-path:polygon(10% 0,90% 0,82% 8%,96% 18%,78% 29%,94% 41%,76% 52%,95% 63%,77% 75%,91% 87%,86% 100%,12% 100%,20% 88%,5% 76%,22% 64%,7% 52%,24% 40%,6% 29%,21% 18%,9% 8%);
+}
+
 .login-screen {
   min-height:100dvh;
   display:grid;
@@ -347,7 +377,7 @@ button { cursor:pointer; }
   width:min(100%,390px);
   padding:28px 25px 24px;
   background:var(--paper);
-  box-shadow:0 12px 35px rgb(40 40 32/.11);
+  box-shadow:none;
 }
 .brand-logo { display:block; width:min(100%,280px); max-height:155px; margin:0 auto 8px; object-fit:contain; }
 .login-card h1 { margin:0; font-family:"KimBold"; font-size:34px; text-align:center; }
@@ -420,6 +450,8 @@ button { cursor:pointer; }
   .visibility-field { grid-template-columns:96px repeat(2,minmax(0,1fr)); }
   .meal-type-field legend,.visibility-field legend { width:auto; }
   .visibility-field label { margin-left:0; }
+  .choice-field { grid-template-columns:96px minmax(0,1fr); }
+  .choice-field>label { grid-column:2; margin-left:0; }
 }
 @media(max-height:720px){
   .journal-header { height:260px; padding-top:31px; padding-bottom:3px; }

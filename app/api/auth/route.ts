@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   return Response.json({ available: !row });
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   await ensureAuthSchema();
   const body = await request.json<Record<string, string>>();
   const action = body.action;
@@ -83,4 +83,13 @@ export async function POST(request: Request) {
     return Response.json({ message: "일치하는 계정이 있으면 복구 안내를 보내드릴게요." });
   }
   return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
+}
+
+export async function POST(request: Request) {
+  try {
+    return await handlePost(request);
+  } catch (error) {
+    console.error("AUTH_SAVE_FAILED", error);
+    return Response.json({ error: "가입 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요. (AUTH_SAVE_FAILED)" }, { status: 500 });
+  }
 }

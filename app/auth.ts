@@ -31,7 +31,7 @@ export async function readSession(cookie: string | null): Promise<AppUser | null
 
 export async function hashPassword(password: string, salt = b64(crypto.getRandomValues(new Uint8Array(16)))) {
   const material = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: unb64(salt), iterations: 210000 }, material, 256);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: unb64(salt), iterations: 60000 }, material, 256);
   return { salt, hash: b64(new Uint8Array(bits)) };
 }
 
