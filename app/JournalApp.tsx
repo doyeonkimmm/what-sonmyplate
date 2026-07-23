@@ -1,9 +1,17 @@
 "use client";
 
-import { ChangeEvent, FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-type User = { displayName: string; email: string } | null;
-type Friend = { id: string; name: string; email: string; color: string };
+type User = { displayName: string; email: string; username: string } | null;
+type Friend = { id: string; name: string; email: string; color: string; favorite: boolean };
+type Suggestion = {
+  id: string;
+  username: string;
+  nickname: string;
+  content: string;
+  status: "pending" | "done";
+  createdAt: number;
+};
 type RecordItem = {
   id: string;
   day: number;
@@ -23,7 +31,26 @@ type RecordItem = {
 };
 
 const pad = (value: number) => String(value).padStart(2, "0");
-const current = new Date();
+
+function getKoreaNow() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return {
+    year: Number(values.year),
+    month: Number(values.month),
+    day: Number(values.day),
+    hour: Number(values.hour),
+    minute: Number(values.minute),
+  };
+}
 
 async function compressPhoto(file: File) {
   if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
@@ -54,18 +81,22 @@ async function compressPhoto(file: File) {
 }
 
 export default function JournalApp({ user }: { user: User }) {
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(7);
-  const [selectedDay, setSelectedDay] = useState(5);
+  const initialNow = getKoreaNow();
+  const [year, setYear] = useState(initialNow.year);
+  const [month, setMonth] = useState(initialNow.month);
+  const [selectedDay, setSelectedDay] = useState(initialNow.day);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerView, setDrawerView] = useState<"menu" | "friends" | "roulette" | "stats">("menu");
+  const [drawerView, setDrawerView] = useState<"menu" | "profile" | "friends" | "roulette" | "stats" | "suggestions">("menu");
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [recordMenu, setRecordMenu] = useState<RecordItem | null>(null);
+  const [recordDeleteTarget, setRecordDeleteTarget] = useState<RecordItem | null>(null);
   const [activeFriend, setActiveFriend] = useState<string | null>(null);
   const [records, setRecords] = useState<RecordItem[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
-  const [formDate, setFormDate] = useState("2026-07-05");
-  const [formTime, setFormTime] = useState("12:00");
+  const [formDate, setFormDate] = useState(`${initialNow.year}-${pad(initialNow.month)}-${pad(initialNow.day)}`);
+  const [formTime, setFormTime] = useState(`${pad(initialNow.hour)}:${pad(initialNow.minute)}`);
   const [location, setLocation] = useState("");
   const [showLocation, setShowLocation] = useState(true);
   const [visibility, setVisibility] = useState<"private" | "friends">("private");
@@ -83,12 +114,17 @@ export default function JournalApp({ user }: { user: User }) {
   const [rouletteResult, setRouletteResult] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Friend | null>(null);
-  const [statsStart, setStatsStart] = useState("2026-01");
-  const [statsEnd, setStatsEnd] = useState("2026-07");
+  const [statsStart, setStatsStart] = useState(`${initialNow.year}-01`);
+  const [statsEnd, setStatsEnd] = useState(`${initialNow.year}-${pad(initialNow.month)}`);
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [nicknameDraft, setNicknameDraft] = useState(user?.displayName || "");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [refreshMessage, setRefreshMessage] = useState("");
+  const [suggestionText, setSuggestionText] = useState("");
+  const [suggestionMessage, setSuggestionMessage] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<number, HTMLElement | null>>({});
-  const drag = useRef({ active: false, moved: false, x: 0, left: 0 });
-  const blockTrackClick = useRef(false);
 
   const dayCount = new Date(year, month, 0).getDate();
   const days = useMemo(() => Array.from({ length: dayCount }, (_, index) => index + 1), [dayCount]);
@@ -97,20 +133,48 @@ export default function JournalApp({ user }: { user: User }) {
     ? sharedRecords.filter((record) => record.year === year && record.month === month)
     : ownRecords;
 
-  useEffect(() => {
+  async function loadAppData(showMessage = false) {
     if (!user) return;
-    fetch("/api/records")
-      .then((response) => response.ok ? response.json() : [])
-      .then((data) => Array.isArray(data) && setRecords(data))
-      .catch(() => undefined);
-    fetch("/api/friends")
-      .then((response) => response.ok ? response.json() : [])
-      .then((data) => Array.isArray(data) && setManagedFriends(data))
-      .catch(() => undefined);
-    fetch("/api/friends?requests=1")
-      .then((response) => response.ok ? response.json() : [])
-      .then((data) => Array.isArray(data) && setFriendRequests(data))
-      .catch(() => undefined);
+    const [recordResponse, friendResponse, requestResponse, profileResponse] = await Promise.all([
+      fetch("/api/records", { cache: "no-store" }).catch(() => null),
+      fetch("/api/friends", { cache: "no-store" }).catch(() => null),
+      fetch("/api/friends?requests=1", { cache: "no-store" }).catch(() => null),
+      fetch("/api/auth?me=1", { cache: "no-store" }).catch(() => null),
+    ]);
+    const [recordData, friendData, requestData, profileData] = await Promise.all([
+      recordResponse?.ok ? recordResponse.json() : [],
+      friendResponse?.ok ? friendResponse.json() : [],
+      requestResponse?.ok ? requestResponse.json() : [],
+      profileResponse?.ok ? profileResponse.json() : null,
+    ]);
+    if (Array.isArray(recordData)) setRecords(recordData);
+    if (Array.isArray(friendData)) {
+      setManagedFriends(friendData);
+      if (activeFriend && !friendData.some((friend: Friend) => friend.id === activeFriend)) setActiveFriend(null);
+    }
+    if (Array.isArray(requestData)) setFriendRequests(requestData);
+    if (profileData?.displayName) {
+      setDisplayName(profileData.displayName);
+      setNicknameDraft(profileData.displayName);
+    }
+    if (showMessage) {
+      setRefreshMessage("새로고침 완료");
+      window.setTimeout(() => setRefreshMessage(""), 1400);
+    }
+  }
+
+  async function loadSuggestions() {
+    if (user?.username !== "doyeon") return;
+    const response = await fetch("/api/suggestions", { cache: "no-store" }).catch(() => null);
+    if (!response?.ok) return;
+    const data = await response.json();
+    if (Array.isArray(data)) setSuggestions(data);
+  }
+
+  useEffect(() => {
+    void loadAppData();
+    // Initial account data load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -125,6 +189,12 @@ export default function JournalApp({ user }: { user: User }) {
   }, [activeFriend]);
 
   useEffect(() => {
+    if (drawerOpen && drawerView === "suggestions") void loadSuggestions();
+    // The administrator list is fetched only while its drawer is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawerOpen, drawerView]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => scrollToDay(selectedDay, "auto"), 60);
     return () => window.clearTimeout(timer);
     // The selected date controls the horizontal journal position.
@@ -132,18 +202,19 @@ export default function JournalApp({ user }: { user: User }) {
   }, [month, year, activeFriend]);
 
   function scrollToDay(day: number, behavior: ScrollBehavior = "smooth") {
+    const track = trackRef.current;
     const target = dayRefs.current[day];
-    if (!target) return;
+    if (!track || !target) return;
     setSelectedDay(day);
-    target.scrollIntoView({ behavior, inline: "start", block: "nearest" });
+    track.scrollTo({ left: target.offsetLeft, behavior });
   }
 
   function goToday() {
-    const today = new Date();
-    setYear(today.getFullYear());
-    setMonth(today.getMonth() + 1);
-    setSelectedDay(today.getDate());
-    window.setTimeout(() => scrollToDay(today.getDate()), 80);
+    const today = getKoreaNow();
+    setYear(today.year);
+    setMonth(today.month);
+    setSelectedDay(today.day);
+    window.setTimeout(() => scrollToDay(today.day), 80);
   }
 
   function changeMonth(delta: number) {
@@ -154,9 +225,26 @@ export default function JournalApp({ user }: { user: User }) {
   }
 
   function openPhoto(day = selectedDay) {
-    const now = new Date();
+    const now = getKoreaNow();
     setFormDate(`${year}-${pad(month)}-${pad(day)}`);
-    setFormTime(`${pad(now.getHours())}:${pad(now.getMinutes())}`);
+    setFormTime(`${pad(now.hour)}:${pad(now.minute)}`);
+    setPhotoOpen(true);
+  }
+
+  function openEditRecord(record: RecordItem) {
+    setEditingRecordId(record.id);
+    setRecordMenu(null);
+    setFormDate(`${record.year}-${pad(record.month)}-${pad(record.day)}`);
+    setFormTime(record.time);
+    setLocation(record.location || "");
+    setShowLocation(record.showLocation);
+    setVisibility(record.visibility);
+    setFood(record.food);
+    setMealType(record.mealType);
+    setExpense(record.expense ? String(record.expense) : "");
+    setMemo(record.memo || "");
+    setPhotoFile(null);
+    setPreview(record.photoUrl || "");
     setPhotoOpen(true);
   }
 
@@ -181,7 +269,8 @@ export default function JournalApp({ user }: { user: User }) {
   }
 
   function resetPhotoForm() {
-    if (preview) URL.revokeObjectURL(preview);
+    if (preview.startsWith("blob:")) URL.revokeObjectURL(preview);
+    setEditingRecordId(null);
     setPreview("");
     setPhotoFile(null);
     setLocation("");
@@ -196,8 +285,8 @@ export default function JournalApp({ user }: { user: User }) {
   async function saveRecord(event: FormEvent) {
     event.preventDefault();
     const [recordYear, recordMonth, recordDay] = formDate.split("-").map(Number);
-    const optimistic: RecordItem = {
-      id: String(Date.now()),
+    const draft: RecordItem = {
+      id: editingRecordId || String(Date.now()),
       year: recordYear,
       month: recordMonth,
       day: recordDay,
@@ -209,10 +298,15 @@ export default function JournalApp({ user }: { user: User }) {
       mealType,
       expense: mealType === "home" ? 0 : Math.max(0, Number(expense) || 0),
       memo: memo.trim(),
-      photoUrl: preview,
+      photoUrl: preview || undefined,
       tint: "#e3e1d8",
     };
-    setRecords((items) => [optimistic, ...items]);
+
+    if (editingRecordId) {
+      setRecords((items) => items.map((item) => item.id === editingRecordId ? draft : item));
+    } else {
+      setRecords((items) => [draft, ...items]);
+    }
     setPhotoOpen(false);
     setYear(recordYear);
     setMonth(recordMonth);
@@ -231,22 +325,35 @@ export default function JournalApp({ user }: { user: User }) {
       body.append("expense", String(mealType === "home" ? 0 : Math.max(0, Number(expense) || 0)));
       body.append("memo", memo.trim());
       try {
-        const response = await fetch("/api/records", { method: "POST", body });
+        const response = await fetch(editingRecordId ? `/api/records?id=${encodeURIComponent(editingRecordId)}` : "/api/records", {
+          method: editingRecordId ? "PATCH" : "POST",
+          body,
+        });
         if (response.ok) {
           const saved = await response.json();
-          setRecords((items) => items.map((item) => item.id === optimistic.id ? saved : item));
+          setRecords((items) => items.map((item) => item.id === draft.id ? saved : item));
+        } else {
+          await loadAppData();
         }
       } catch {
-        // Keep the optimistic record visible for this visit.
+        await loadAppData();
       }
     }
     window.setTimeout(() => scrollToDay(recordDay), 100);
     resetPhotoForm();
   }
 
+  async function deleteRecord(record: RecordItem) {
+    const response = await fetch(`/api/records?id=${encodeURIComponent(record.id)}`, { method: "DELETE" }).catch(() => null);
+    if (!response?.ok) return;
+    setRecords((items) => items.filter((item) => item.id !== record.id));
+    setRecordDeleteTarget(null);
+    setRecordMenu(null);
+  }
+
   function onTrackScroll() {
     const track = trackRef.current;
-    if (!track || drag.current.active) return;
+    if (!track) return;
     const left = track.scrollLeft + 8;
     let nearest = selectedDay;
     let distance = Number.POSITIVE_INFINITY;
@@ -260,36 +367,6 @@ export default function JournalApp({ user }: { user: User }) {
       }
     });
     if (nearest !== selectedDay) setSelectedDay(nearest);
-  }
-
-  function startDrag(event: PointerEvent<HTMLDivElement>) {
-    const track = trackRef.current;
-    if (!track || event.button !== 0) return;
-    drag.current = { active: true, moved: false, x: event.clientX, left: track.scrollLeft };
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function moveDrag(event: PointerEvent<HTMLDivElement>) {
-    if (!drag.current.active || !trackRef.current) return;
-    const distance = event.clientX - drag.current.x;
-    if (!drag.current.moved && Math.abs(distance) < 4) return;
-    drag.current.moved = true;
-    event.preventDefault();
-    trackRef.current.scrollLeft = drag.current.left - distance;
-  }
-
-  function endDrag(event: PointerEvent<HTMLDivElement>) {
-    if (!drag.current.active) return;
-    const moved = drag.current.moved;
-    drag.current.active = false;
-    if (trackRef.current?.hasPointerCapture(event.pointerId)) {
-      trackRef.current.releasePointerCapture(event.pointerId);
-    }
-    if (moved) {
-      blockTrackClick.current = true;
-      window.setTimeout(() => { blockTrackClick.current = false; }, 0);
-    }
-    onTrackScroll();
   }
 
   async function addFriend(event: FormEvent) {
@@ -334,6 +411,65 @@ export default function JournalApp({ user }: { user: User }) {
     }
   }
 
+  async function toggleFavorite(friend: Friend) {
+    const next = !friend.favorite;
+    setFriendMessage("");
+    if (next && managedFriends.filter((item) => item.favorite).length >= 2) {
+      return setFriendMessage("즐겨찾기는 최대 2명까지 가능해요.");
+    }
+    const response = await fetch("/api/friends", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: friend.id, action: "favorite", favorite: next }),
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+    if (!response?.ok) return setFriendMessage(data?.error || "즐겨찾기를 변경하지 못했어요.");
+    setManagedFriends((items) => items
+      .map((item) => item.id === friend.id ? { ...item, favorite: next } : item)
+      .sort((a, b) => Number(b.favorite) - Number(a.favorite)));
+  }
+
+  async function changeNickname(event: FormEvent) {
+    event.preventDefault();
+    setProfileMessage("");
+    const response = await fetch("/api/auth", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ nickname: nicknameDraft }),
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+    if (!response?.ok) return setProfileMessage(data?.error || "닉네임을 변경하지 못했어요.");
+    setDisplayName(data.displayName);
+    setNicknameDraft(data.displayName);
+    setProfileMessage("닉네임을 변경했어요.");
+  }
+
+  async function submitSuggestion(event: FormEvent) {
+    event.preventDefault();
+    setSuggestionMessage("");
+    const response = await fetch("/api/suggestions", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ content: suggestionText }),
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+    if (!response?.ok) return setSuggestionMessage(data?.error || "건의사항을 보내지 못했어요.");
+    setSuggestionText("");
+    setSuggestionMessage("건의사항을 보냈어요.");
+    if (user?.username === "doyeon") void loadSuggestions();
+  }
+
+  async function updateSuggestionStatus(item: Suggestion) {
+    const status = item.status === "pending" ? "done" : "pending";
+    const response = await fetch("/api/suggestions", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: item.id, status }),
+    }).catch(() => null);
+    if (!response?.ok) return;
+    setSuggestions((items) => items.map((value) => value.id === item.id ? { ...value, status } : value));
+  }
+
   function spinRoulette() {
     if (!rouletteItems.length || spinning) return;
     setSpinning(true);
@@ -360,7 +496,9 @@ export default function JournalApp({ user }: { user: User }) {
   }, { delivery: 0, dining: 0, home: 0 } as Record<"delivery" | "dining" | "home", number>);
   const totalExpense = rangedRecords.reduce((sum, item) => sum + (item.expense || 0), 0);
   const activeFriendData = managedFriends.find((friend) => friend.id === activeFriend);
-  const headerFriends = managedFriends.length > 3 ? managedFriends.slice(0, 2) : managedFriends;
+  const headerFriends = [...managedFriends]
+    .sort((a, b) => Number(b.favorite) - Number(a.favorite))
+    .slice(0, 2);
   const rouletteColors = ["#efc3c2", "#b9dedc", "#e1dba6", "#d3cdc5"];
   const rouletteBackground = `conic-gradient(${rouletteItems.map((_, index) => {
     const start = (index / rouletteItems.length) * 360;
@@ -381,7 +519,7 @@ export default function JournalApp({ user }: { user: User }) {
             <div className="week-labels">{["S", "M", "T", "W", "T", "F", "S"].map((label, index) => <b key={`${label}-${index}`}>{label}</b>)}</div>
             <div className="mini-calendar">
               {calendarCells.map((day, index) => day ? (
-                <button key={day} className={`${day === selectedDay ? "active" : ""} ${visibleRecords.some((record) => record.day === day) ? "has-record" : ""} ${day === current.getDate() && month === current.getMonth() + 1 && year === current.getFullYear() ? "current" : ""}`} onClick={() => scrollToDay(day)}>
+                <button key={day} className={`${day === selectedDay ? "active" : ""} ${visibleRecords.some((record) => record.day === day) ? "has-record" : ""} ${day === initialNow.day && month === initialNow.month && year === initialNow.year ? "current" : ""}`} onClick={() => scrollToDay(day)}>
                   {day}
                 </button>
               ) : <span key={`blank-${index}`} />)}
@@ -413,7 +551,7 @@ export default function JournalApp({ user }: { user: User }) {
                   <span /><i />
                 </button>
               ))}
-              {managedFriends.length > 3 && (
+              {managedFriends.length > 2 && (
                 <button
                   className="friend-overflow"
                   onClick={() => { setDrawerOpen(true); setDrawerView("friends"); }}
@@ -435,15 +573,6 @@ export default function JournalApp({ user }: { user: User }) {
           className="record-track"
           ref={trackRef}
           onScroll={onTrackScroll}
-          onPointerDownCapture={startDrag}
-          onPointerMoveCapture={moveDrag}
-          onPointerUpCapture={endDrag}
-          onPointerCancelCapture={endDrag}
-          onClickCapture={(event) => {
-            if (!blockTrackClick.current) return;
-            event.preventDefault();
-            event.stopPropagation();
-          }}
         >
           {days.map((day) => {
             const dayRecords = visibleRecords.filter((record) => record.day === day).sort((a, b) => a.time.localeCompare(b.time));
@@ -455,12 +584,13 @@ export default function JournalApp({ user }: { user: User }) {
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
-                    <figure className="record-card" key={record.id}>
-                      {record.photoUrl ? <img src={record.photoUrl} alt={record.food} draggable={false} /> : <div className="record-placeholder" style={{ background: record.tint }}><span>◌</span></div>}
+                    <figure className={`record-card ${!activeFriend ? "editable" : ""}`} key={record.id}>
+                      {record.photoUrl ? <button type="button" className="record-photo-button" onClick={() => !activeFriend && setRecordMenu(record)} aria-label={`${record.food} 기록 메뉴 열기`}><img src={record.photoUrl} alt={record.food} draggable={false} /></button> : <button type="button" className="record-photo-button" onClick={() => !activeFriend && setRecordMenu(record)} aria-label={`${record.food} 기록 메뉴 열기`}><div className="record-placeholder" style={{ background: record.tint }}><span>◌</span></div></button>}
                       <figcaption>
                         <b>{record.food}</b>
                         <p>{record.memo}</p>
                         <small>{record.time}{record.showLocation && record.location ? ` · ${record.location}` : ""}</small>
+                        {record.expense > 0 && <small className="record-expense">{record.expense.toLocaleString("ko-KR")}원</small>}
                       </figcaption>
                     </figure>
                   ))}
@@ -474,7 +604,7 @@ export default function JournalApp({ user }: { user: User }) {
           <div className="photo-layer">
             <header className="photo-mini-head">
               <button onClick={() => { setPhotoOpen(false); resetPhotoForm(); }}>‹</button>
-              <span>사진 추가</span>
+              <span>{editingRecordId ? "기록 수정" : "사진 추가"}</span>
               <i />
             </header>
             <form onSubmit={saveRecord}>
@@ -512,9 +642,33 @@ export default function JournalApp({ user }: { user: User }) {
               <label className="memo-field"><span>한 줄 메모</span><textarea rows={3} value={memo} onChange={(event) => setMemo(event.target.value)} /></label>
               <div className="form-actions">
                 <button type="button" onClick={() => { setPhotoOpen(false); resetPhotoForm(); }}>취소</button>
-                <button type="submit">저장</button>
+                <button type="submit">{editingRecordId ? "수정 완료" : "저장"}</button>
               </div>
             </form>
+          </div>
+        )}
+
+        {recordMenu && (
+          <div className="record-action-shade" onClick={() => setRecordMenu(null)}>
+            <div className="record-action-sheet" onClick={(event) => event.stopPropagation()}>
+              <b>{recordMenu.food}</b>
+              <button type="button" onClick={() => openEditRecord(recordMenu)}>수정</button>
+              <button type="button" className="danger" onClick={() => { setRecordDeleteTarget(recordMenu); setRecordMenu(null); }}>삭제</button>
+              <button type="button" onClick={() => setRecordMenu(null)}>취소</button>
+            </div>
+          </div>
+        )}
+
+        {recordDeleteTarget && (
+          <div className="record-action-shade" onClick={() => setRecordDeleteTarget(null)}>
+            <div className="record-delete-dialog" onClick={(event) => event.stopPropagation()}>
+              <b>이 기록을 삭제할까요?</b>
+              <p>삭제한 기록과 사진은 다시 복구할 수 없어요.</p>
+              <span>
+                <button type="button" onClick={() => setRecordDeleteTarget(null)}>취소</button>
+                <button type="button" onClick={() => void deleteRecord(recordDeleteTarget)}>삭제</button>
+              </span>
+            </div>
           </div>
         )}
 
@@ -528,14 +682,33 @@ export default function JournalApp({ user }: { user: User }) {
           {drawerView === "menu" && (
             <nav>
               {user ? (
-                <button className="account-row" onClick={async () => { await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"logout" }) }); location.reload(); }}><span>{user.displayName}</span><small>로그아웃</small></button>
+                <button className="account-row" onClick={() => setDrawerView("profile")}><span>{displayName}</span><small>닉네임 변경</small></button>
               ) : (
                 <a href="/signin-with-chatgpt?return_to=%2F">로그인 &amp; 회원가입</a>
               )}
+              <button onClick={async () => {
+                await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"logout" }) }).catch(() => null);
+                window.location.replace("/");
+              }}>로그아웃</button>
               <button onClick={() => setDrawerView("friends")}>친구 관리</button>
               <button onClick={() => setDrawerView("roulette")}>룰렛 돌리기</button>
               <button onClick={() => setDrawerView("stats")}>통계</button>
+              <button onClick={() => void loadAppData(true)}>새로고침</button>
+              <button onClick={() => setDrawerView("suggestions")}>건의사항</button>
+              {refreshMessage && <output className="refresh-message">{refreshMessage}</output>}
             </nav>
+          )}
+
+          {drawerView === "profile" && (
+            <section className="drawer-panel profile-panel">
+              <h2>닉네임 변경</h2>
+              <form onSubmit={changeNickname}>
+                <input minLength={2} maxLength={12} value={nicknameDraft} onChange={(event) => setNicknameDraft(event.target.value)} placeholder="새 닉네임" required />
+                <button>변경</button>
+              </form>
+              <small>닉네임은 2~12자로 입력해 주세요.</small>
+              {profileMessage && <output className="friend-message">{profileMessage}</output>}
+            </section>
           )}
 
           {drawerView === "friends" && (
@@ -551,7 +724,14 @@ export default function JournalApp({ user }: { user: User }) {
                   <button onClick={() => answerFriendRequest(request, "reject")}>거절</button>
                 </div>)}
               </div>}
-              <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => setPendingDelete(friend)}>×</button></div>)}</div>
+              <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}>
+                <button className="friend-open" onClick={() => { setActiveFriend(friend.id); setDrawerOpen(false); }} aria-label={`${friend.name} 기록장 열기`}>
+                  <i style={{ background: friend.color }} />
+                  <span><b>{friend.name}</b><small>{friend.email}</small></span>
+                </button>
+                <button className={`favorite-button ${friend.favorite ? "active" : ""}`} onClick={() => void toggleFavorite(friend)} aria-label={`${friend.name} 즐겨찾기`}>{friend.favorite ? "★" : "☆"}</button>
+                <button className="friend-delete" onClick={() => setPendingDelete(friend)} aria-label={`${friend.name} 삭제`}>×</button>
+              </div>)}</div>
             </section>
           )}
 
@@ -582,6 +762,32 @@ export default function JournalApp({ user }: { user: User }) {
               {stats.length ? stats.slice(0, 6).map(([name, count], index) => (
                 <div className="stat-row" key={name}><span>{pad(index + 1)} {name}</span><i><b style={{ width: `${Math.max(18, (count / stats[0][1]) * 100)}%` }} /></i><small>{count}회</small></div>
               )) : <p className="empty-stats">사진을 추가하면 자주 먹은 음식이 여기에 보여요.</p>}
+            </section>
+          )}
+
+          {drawerView === "suggestions" && (
+            <section className="drawer-panel suggestions-panel">
+              <h2>건의사항</h2>
+              <form onSubmit={submitSuggestion}>
+                <textarea maxLength={500} rows={5} value={suggestionText} onChange={(event) => setSuggestionText(event.target.value)} placeholder="불편한 점이나 추가했으면 하는 기능을 적어 주세요." required />
+                <button>보내기</button>
+              </form>
+              {suggestionMessage && <output className="friend-message">{suggestionMessage}</output>}
+              {user?.username === "doyeon" && (
+                <div className="admin-suggestions">
+                  <h3>받은 건의사항</h3>
+                  {suggestions.length === 0 ? <p>아직 받은 건의사항이 없어요.</p> : suggestions.map((item) => (
+                    <article key={item.id} className={item.status === "done" ? "done" : ""}>
+                      <header><b>{item.nickname}</b><small>@{item.username}</small></header>
+                      <p>{item.content}</p>
+                      <footer>
+                        <time>{new Date(item.createdAt).toLocaleString("ko-KR")}</time>
+                        <button onClick={() => void updateSuggestionStatus(item)}>{item.status === "done" ? "처리 취소" : "처리 완료"}</button>
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
           )}
 

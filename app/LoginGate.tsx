@@ -5,6 +5,7 @@ export default function LoginGate() {
   const [mode, setMode] = useState<"login"|"signup"|"recover">("login");
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ username:"", password:"", email:"", nickname:"" });
+  const [remember, setRemember] = useState(false);
   const [message, setMessage] = useState("");
   const set = (key: string, value: string) => setForm(v => ({ ...v, [key]: value }));
   async function submit(e: FormEvent) {
@@ -16,13 +17,13 @@ export default function LoginGate() {
       }
       setStep(step + 1); return;
     }
-    const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:mode, ...form }) });
+    const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:mode, remember, ...form }) });
     const raw = await r.text();
     let data: { error?: string; message?: string } = {};
     try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
     if (!r.ok) return setMessage(data.error || (r.status >= 500 ? "가입 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요." : "입력 내용을 다시 확인해 주세요."));
-    if (mode === "recover") return setMessage(data.message);
-    location.assign("/?app=1");
+    if (mode === "recover") return setMessage(data.message || "복구 안내를 확인해 주세요.");
+    location.assign("/");
   }
   return <main className="login-screen">
     <section className="login-card">
@@ -32,6 +33,7 @@ export default function LoginGate() {
       <form onSubmit={submit}>
         {(mode !== "signup" || step === 1) && <label>아이디<input autoComplete="username" value={form.username} onChange={e=>set("username",e.target.value)} required /></label>}
         {mode === "login" && <label>비밀번호<input type="password" autoComplete="current-password" value={form.password} onChange={e=>set("password",e.target.value)} required /></label>}
+        {mode === "login" && <label className="remember-login"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} />자동 로그인</label>}
         {mode === "signup" && step === 2 && <><label>비밀번호<input type="password" autoComplete="new-password" value={form.password} onChange={e=>set("password",e.target.value)} required /></label><label>복구용 이메일<input type="email" autoComplete="email" value={form.email} onChange={e=>set("email",e.target.value)} required /></label></>}
         {mode === "signup" && step === 3 && <label>닉네임<input maxLength={20} value={form.nickname} onChange={e=>set("nickname",e.target.value)} required /></label>}
         {mode === "recover" && <label>복구용 이메일<input type="email" value={form.email} onChange={e=>set("email",e.target.value)} required /></label>}
