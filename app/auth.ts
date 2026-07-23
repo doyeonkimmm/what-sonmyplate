@@ -12,13 +12,13 @@ async function hmac(value: string) {
 
 export type AppUser = { id: string; username: string; email: string; displayName: string };
 
-export async function makeSession(user: AppUser) {
-  const payload = b64(enc.encode(JSON.stringify({ ...user, exp: Date.now() + 1000 * 60 * 60 * 24 * 30 })));
+export async function makeSession(user: AppUser, ttlMs = 1000 * 60 * 60 * 24 * 30) {
+  const payload = b64(enc.encode(JSON.stringify({ ...user, exp: Date.now() + ttlMs })));
   return `${payload}.${await hmac(payload)}`;
 }
 
 export async function readSession(cookie: string | null): Promise<AppUser | null> {
-  const token = cookie?.match(/(?:^|;\s*)plate_session_v2=([^;]+)/)?.[1];
+  const token = cookie?.match(/(?:^|;\s*)plate_session_v3=([^;]+)/)?.[1];
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature || await hmac(payload) !== signature) return null;
@@ -35,5 +35,5 @@ export async function hashPassword(password: string, salt = b64(crypto.getRandom
   return { salt, hash: b64(new Uint8Array(bits)) };
 }
 
-export const sessionCookie = (token: string) =>
-  `plate_session_v2=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`;
+export const sessionCookie = (token: string, maxAge = 2592000) =>
+  `plate_session_v3=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
