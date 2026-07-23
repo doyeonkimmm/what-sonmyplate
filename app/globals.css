@@ -162,7 +162,7 @@ button { cursor:pointer; }
 .roulette-tags button { padding:5px 8px; border:1px solid var(--ink); background:white; font-size:12px; }
 .stat-summary { margin-bottom:20px; padding:15px 0; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); }
 .stat-summary b { display:block; font-family:"KimBold"; font-size:50px; line-height:1; }
-.stat-summary span { font-size:15px; }
+.stat-summary span { font-size:18px; }
 .stat-range { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:12px; }
 
 /* Figma에서 내보낸 원본 손그림 에셋 */
@@ -372,21 +372,21 @@ button { cursor:pointer; }
   .friend-row button { width:41px; height:41px; }
   .login-card { padding:22px 18px; }
 }
-.stat-range label { font-size:12px; text-align:left; }
-.stat-range input { width:100%; height:39px; margin-top:5px; padding:4px; border:3px solid var(--ink); border-radius:2px 4px 1px 3px/3px 1px 4px 2px; background:#fff; font-size:11px; }
+.stat-range label { font-size:15px; text-align:left; }
+.stat-range input { width:100%; height:41px; margin-top:5px; padding:4px; border:3px solid var(--ink); border-radius:2px 4px 1px 3px/3px 1px 4px 2px; background:#fff; font-size:13px; }
 .type-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:12px; }
 .type-stats div { min-height:78px; display:grid; place-content:center; gap:3px; padding:8px 4px; border:3px solid var(--ink); border-radius:3px 1px 4px 2px/2px 4px 1px 3px; background:#fff; text-align:center; }
 .type-stats b,.type-stats span { display:block; }
 .type-stats b { font-family:"KimBold"; font-size:29px; line-height:1; }
-.type-stats span { font-size:12px; }
+.type-stats span { font-size:15px; }
 .expense-total { display:flex; align-items:end; justify-content:space-between; margin-bottom:18px; padding:9px 0; border-bottom:3px solid var(--ink); }
-.expense-total span { font-size:13px; }
+.expense-total span { font-size:16px; }
 .expense-total b { font-family:"KimBold"; font-size:24px; }
-.stat-row { display:grid; grid-template-columns:1fr 55px 30px; align-items:center; gap:6px; margin:12px 0; font-size:13px; }
+.stat-row { display:grid; grid-template-columns:1fr 55px 34px; align-items:center; gap:6px; margin:12px 0; font-size:15px; }
 .stat-row>i { height:8px; border:1px solid var(--ink); background:white; }
 .stat-row>i b { display:block; height:100%; background:var(--pink); }
 .stat-row small { text-align:right; }
-.empty-stats { padding:50px 10px; border-top:1px solid var(--ink); font-size:14px; line-height:1.6; }
+.empty-stats { padding:50px 10px; border-top:1px solid var(--ink); font-size:16px; line-height:1.6; }
 .delete-confirm { position:absolute; z-index:4; inset:0; display:grid; place-items:center; padding:16px; background:rgb(255 255 255/.72); }
 .delete-confirm>div { width:100%; padding:20px 14px 14px; border:3px solid var(--ink); background:var(--paper); box-shadow:5px 5px 0 var(--ink); }
 .delete-confirm b { display:block; font-size:18px; }
