@@ -49,7 +49,7 @@ button { cursor:pointer; }
 
 .header-tools { padding-top:3px; }
 .tool-row { display:flex; align-items:center; justify-content:space-between; gap:13px; }
-.today-sketch { min-width:89px; height:40px; padding:0 9px 4px; border:3px solid var(--ink); border-radius:3px 7px 2px 5px/5px 3px 6px 2px; background:var(--yellow); font-size:27px; font-weight:800; line-height:31px; letter-spacing:1px; box-shadow:2px 2px 0 rgb(40 40 32/.9),inset 0 -1px 0 rgb(40 40 32/.18); transform:rotate(-1deg); }
+.today-sketch { min-width:89px; height:40px; padding:0 9px 4px; border:3px solid var(--ink); border-radius:3px 7px 2px 5px/5px 3px 6px 2px; background:var(--yellow); font-family:"KimBold",sans-serif; font-size:27px; font-weight:800; line-height:31px; letter-spacing:1px; box-shadow:2px 2px 0 rgb(40 40 32/.9),inset 0 -1px 0 rgb(40 40 32/.18); transform:rotate(-1deg); }
 .today-sketch:active { transform:rotate(-1deg) translateY(2px); }
 .menu-sketch { width:49px; height:42px; display:grid; align-content:center; gap:5px; padding:5px 2px; border:0; background:transparent; }
 .menu-sketch i { display:block; width:39px; height:7px; border-radius:2px 1px 2px 1px/1px 2px 1px 2px; background:var(--ink); clip-path:polygon(0 18%,13% 6%,29% 16%,48% 5%,67% 17%,83% 7%,100% 15%,100% 85%,84% 94%,65% 83%,47% 95%,29% 84%,12% 94%,0 83%); transform:rotate(-1deg); }
@@ -79,7 +79,7 @@ button { cursor:pointer; }
   padding:0 9px 2px;
   border-radius:3px 6px 2px 5px/5px 2px 6px 3px;
   background:var(--yellow);
-  font-family:"SSRONET","Malgun Gothic",sans-serif;
+  font-family:"KimBold",sans-serif;
   font-size:20px;
   font-weight:800;
   box-shadow:2px 2px 0 rgb(40 40 32/.9),inset 0 -1px 0 rgb(40 40 32/.18);
