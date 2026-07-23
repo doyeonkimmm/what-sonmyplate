@@ -516,14 +516,24 @@ button { cursor:pointer; }
 }
 
 /* 2026-07 usability fixes */
+/* The whole journal moves as one surface: horizontal swipe changes dates,
+   vertical swipe scrolls every date column together. */
 .record-track {
-  overflow-x:hidden;
-  cursor:default;
-  touch-action:pan-y;
-  scroll-snap-type:x mandatory;
+  overflow-x:auto;
+  overflow-y:auto;
+  cursor:grab;
+  touch-action:auto;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
 }
-.record-track:active { cursor:default; }
-.day-sheet { scroll-snap-stop:always; }
+.record-track:active { cursor:grabbing; }
+.day-sheet {
+  height:auto;
+  min-height:100%;
+  overflow:visible;
+  align-self:stretch;
+  scroll-snap-stop:normal;
+}
 .day-sheet::after { display:none; }
 .day-sheet>header::after,
 .day-content::after {
@@ -653,3 +663,38 @@ button { cursor:pointer; }
 .admin-suggestions article footer { display:flex; align-items:center; justify-content:space-between; gap:7px; }
 .admin-suggestions article time { font-size:10px; }
 .admin-suggestions article button { min-height:31px; padding:3px 7px; border:1px solid var(--ink); background:var(--yellow); font-size:12px; }
+
+/* 2026-07 drawer divider restoration
+   Keep the divider fully inside the drawer so it is not clipped, and draw it
+   above the sticky header so the line continues from the very top. */
+.more-drawer::before {
+  z-index:20;
+  top:0;
+  bottom:0;
+  left:0;
+  width:5px;
+}
+.more-drawer>header,
+.more-drawer nav,
+.more-drawer .drawer-panel {
+  position:relative;
+  z-index:8;
+}
+.more-drawer>header { z-index:9; }
+
+/* Record edit and delete menu */
+.record-photo-button { display:block; width:100%; padding:0; border:0; background:transparent; color:inherit; text-align:inherit; }
+.record-card.editable .record-photo-button { cursor:pointer; }
+.record-card.editable .record-photo-button:active { opacity:.88; }
+.record-action-shade { position:absolute; z-index:20; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:18px; background:rgb(40 40 32/.25); }
+.record-action-sheet { width:100%; padding:14px; border:3px solid var(--ink); border-radius:5px 3px 4px 2px/3px 5px 2px 4px; background:var(--paper); box-shadow:5px 5px 0 rgb(40 40 32/.82); }
+.record-action-sheet>b { display:block; overflow:hidden; margin:2px 4px 10px; font-size:18px; white-space:nowrap; text-overflow:ellipsis; }
+.record-action-sheet button { display:block; width:100%; min-height:48px; border:0; border-top:2px solid var(--ink); background:transparent; font-size:18px; text-align:left; }
+.record-action-sheet button.danger { color:#a23f4b; }
+.record-action-sheet button:last-child { color:#6e6e66; }
+.record-delete-dialog { width:100%; margin:auto 0; padding:20px 15px 15px; border:3px solid var(--ink); background:var(--paper); box-shadow:5px 5px 0 var(--ink); }
+.record-delete-dialog>b { display:block; font-size:21px; }
+.record-delete-dialog p { margin:10px 0 18px; font-size:14px; line-height:1.5; }
+.record-delete-dialog span { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.record-delete-dialog button { min-height:44px; border:2px solid var(--ink); background:#fff; font-size:16px; }
+.record-delete-dialog button:last-child { background:var(--pink); }

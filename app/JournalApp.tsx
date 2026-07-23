@@ -88,6 +88,9 @@ export default function JournalApp({ user }: { user: User }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerView, setDrawerView] = useState<"menu" | "profile" | "friends" | "roulette" | "stats" | "suggestions">("menu");
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [recordMenu, setRecordMenu] = useState<RecordItem | null>(null);
+  const [recordDeleteTarget, setRecordDeleteTarget] = useState<RecordItem | null>(null);
   const [activeFriend, setActiveFriend] = useState<string | null>(null);
   const [records, setRecords] = useState<RecordItem[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -227,6 +230,23 @@ export default function JournalApp({ user }: { user: User }) {
     setPhotoOpen(true);
   }
 
+  function openEditRecord(record: RecordItem) {
+    setEditingRecordId(record.id);
+    setRecordMenu(null);
+    setFormDate(`${record.year}-${pad(record.month)}-${pad(record.day)}`);
+    setFormTime(record.time);
+    setLocation(record.location || "");
+    setShowLocation(record.showLocation);
+    setVisibility(record.visibility);
+    setFood(record.food);
+    setMealType(record.mealType);
+    setExpense(record.expense ? String(record.expense) : "");
+    setMemo(record.memo || "");
+    setPhotoFile(null);
+    setPreview(record.photoUrl || "");
+    setPhotoOpen(true);
+  }
+
   async function onPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -248,7 +268,8 @@ export default function JournalApp({ user }: { user: User }) {
   }
 
   function resetPhotoForm() {
-    if (preview) URL.revokeObjectURL(preview);
+    if (preview.startsWith("blob:")) URL.revokeObjectURL(preview);
+    setEditingRecordId(null);
     setPreview("");
     setPhotoFile(null);
     setLocation("");
@@ -263,8 +284,8 @@ export default function JournalApp({ user }: { user: User }) {
   async function saveRecord(event: FormEvent) {
     event.preventDefault();
     const [recordYear, recordMonth, recordDay] = formDate.split("-").map(Number);
-    const optimistic: RecordItem = {
-      id: String(Date.now()),
+    const draft: RecordItem = {
+      id: editingRecordId || String(Date.now()),
       year: recordYear,
       month: recordMonth,
       day: recordDay,
@@ -276,10 +297,15 @@ export default function JournalApp({ user }: { user: User }) {
       mealType,
       expense: mealType === "home" ? 0 : Math.max(0, Number(expense) || 0),
       memo: memo.trim(),
-      photoUrl: preview,
+      photoUrl: preview || undefined,
       tint: "#e3e1d8",
     };
-    setRecords((items) => [optimistic, ...items]);
+
+    if (editingRecordId) {
+      setRecords((items) => items.map((item) => item.id === editingRecordId ? draft : item));
+    } else {
+      setRecords((items) => [draft, ...items]);
+    }
     setPhotoOpen(false);
     setYear(recordYear);
     setMonth(recordMonth);
@@ -298,17 +324,30 @@ export default function JournalApp({ user }: { user: User }) {
       body.append("expense", String(mealType === "home" ? 0 : Math.max(0, Number(expense) || 0)));
       body.append("memo", memo.trim());
       try {
-        const response = await fetch("/api/records", { method: "POST", body });
+        const response = await fetch(editingRecordId ? `/api/records?id=${encodeURIComponent(editingRecordId)}` : "/api/records", {
+          method: editingRecordId ? "PATCH" : "POST",
+          body,
+        });
         if (response.ok) {
           const saved = await response.json();
-          setRecords((items) => items.map((item) => item.id === optimistic.id ? saved : item));
+          setRecords((items) => items.map((item) => item.id === draft.id ? saved : item));
+        } else {
+          await loadAppData();
         }
       } catch {
-        // Keep the optimistic record visible for this visit.
+        await loadAppData();
       }
     }
     window.setTimeout(() => scrollToDay(recordDay), 100);
     resetPhotoForm();
+  }
+
+  async function deleteRecord(record: RecordItem) {
+    const response = await fetch(`/api/records?id=${encodeURIComponent(record.id)}`, { method: "DELETE" }).catch(() => null);
+    if (!response?.ok) return;
+    setRecords((items) => items.filter((item) => item.id !== record.id));
+    setRecordDeleteTarget(null);
+    setRecordMenu(null);
   }
 
   function onTrackScroll() {
@@ -544,8 +583,8 @@ export default function JournalApp({ user }: { user: User }) {
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
-                    <figure className="record-card" key={record.id}>
-                      {record.photoUrl ? <img src={record.photoUrl} alt={record.food} draggable={false} /> : <div className="record-placeholder" style={{ background: record.tint }}><span>◌</span></div>}
+                    <figure className={`record-card ${!activeFriend ? "editable" : ""}`} key={record.id}>
+                      {record.photoUrl ? <button type="button" className="record-photo-button" onClick={() => !activeFriend && setRecordMenu(record)} aria-label={`${record.food} 기록 메뉴 열기`}><img src={record.photoUrl} alt={record.food} draggable={false} /></button> : <button type="button" className="record-photo-button" onClick={() => !activeFriend && setRecordMenu(record)} aria-label={`${record.food} 기록 메뉴 열기`}><div className="record-placeholder" style={{ background: record.tint }}><span>◌</span></div></button>}
                       <figcaption>
                         <b>{record.food}</b>
                         <p>{record.memo}</p>
@@ -564,7 +603,7 @@ export default function JournalApp({ user }: { user: User }) {
           <div className="photo-layer">
             <header className="photo-mini-head">
               <button onClick={() => { setPhotoOpen(false); resetPhotoForm(); }}>‹</button>
-              <span>사진 추가</span>
+              <span>{editingRecordId ? "기록 수정" : "사진 추가"}</span>
               <i />
             </header>
             <form onSubmit={saveRecord}>
@@ -602,9 +641,33 @@ export default function JournalApp({ user }: { user: User }) {
               <label className="memo-field"><span>한 줄 메모</span><textarea rows={3} value={memo} onChange={(event) => setMemo(event.target.value)} /></label>
               <div className="form-actions">
                 <button type="button" onClick={() => { setPhotoOpen(false); resetPhotoForm(); }}>취소</button>
-                <button type="submit">저장</button>
+                <button type="submit">{editingRecordId ? "수정 완료" : "저장"}</button>
               </div>
             </form>
+          </div>
+        )}
+
+        {recordMenu && (
+          <div className="record-action-shade" onClick={() => setRecordMenu(null)}>
+            <div className="record-action-sheet" onClick={(event) => event.stopPropagation()}>
+              <b>{recordMenu.food}</b>
+              <button type="button" onClick={() => openEditRecord(recordMenu)}>수정</button>
+              <button type="button" className="danger" onClick={() => { setRecordDeleteTarget(recordMenu); setRecordMenu(null); }}>삭제</button>
+              <button type="button" onClick={() => setRecordMenu(null)}>취소</button>
+            </div>
+          </div>
+        )}
+
+        {recordDeleteTarget && (
+          <div className="record-action-shade" onClick={() => setRecordDeleteTarget(null)}>
+            <div className="record-delete-dialog" onClick={(event) => event.stopPropagation()}>
+              <b>이 기록을 삭제할까요?</b>
+              <p>삭제한 기록과 사진은 다시 복구할 수 없어요.</p>
+              <span>
+                <button type="button" onClick={() => setRecordDeleteTarget(null)}>취소</button>
+                <button type="button" onClick={() => void deleteRecord(recordDeleteTarget)}>삭제</button>
+              </span>
+            </div>
           </div>
         )}
 

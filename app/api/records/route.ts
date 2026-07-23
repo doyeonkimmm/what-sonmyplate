@@ -127,3 +127,70 @@ export async function POST(request: Request) {
     image_key: imageKey,
   }), { status: 201 });
 }
+
+
+export async function PATCH(request: Request) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return Response.json({ error: "기록을 찾을 수 없어요." }, { status: 400 });
+
+  const { DB, PHOTOS } = bindings();
+  const existing = await DB.prepare(
+    "SELECT id, image_key FROM records WHERE id = ? AND owner_email = ?",
+  ).bind(id, user.email).first<{ id: string; image_key: string | null }>();
+  if (!existing) return Response.json({ error: "기록을 찾을 수 없어요." }, { status: 404 });
+
+  const body = await request.formData();
+  const date = String(body.get("date") || "");
+  const time = String(body.get("time") || "");
+  const location = String(body.get("location") || "");
+  const showLocation = String(body.get("showLocation")) === "true";
+  const visibility = body.get("visibility") === "friends" ? "friends" : "private";
+  const food = String(body.get("food") || "오늘의 한 끼").slice(0, 80);
+  const mealType = ["delivery", "dining", "home"].includes(String(body.get("mealType"))) ? String(body.get("mealType")) : "home";
+  const expense = mealType === "home" ? 0 : Math.max(0, Number(body.get("expense")) || 0);
+  const memo = String(body.get("memo") || "").slice(0, 300);
+  const photo = body.get("photo");
+  let imageKey = existing.image_key;
+
+  if (photo instanceof File && photo.size > 0) {
+    if (photo.size > 10 * 1024 * 1024) return Response.json({ error: "사진은 10MB 이하만 올릴 수 있어요." }, { status: 413 });
+    imageKey = `${user.email}/${id}`;
+    await PHOTOS.put(imageKey, await photo.arrayBuffer(), { httpMetadata: { contentType: photo.type || "image/jpeg" } });
+  }
+
+  await DB.prepare(
+    `UPDATE records SET record_date = ?, record_time = ?, location = ?, show_location = ?, visibility = ?,
+     food = ?, meal_type = ?, expense = ?, memo = ?, image_key = ? WHERE id = ? AND owner_email = ?`,
+  ).bind(date, time, location, showLocation ? 1 : 0, visibility, food, mealType, expense, memo, imageKey, id, user.email).run();
+
+  return Response.json(toClient({
+    id,
+    record_date: date,
+    record_time: time,
+    location,
+    show_location: showLocation ? 1 : 0,
+    visibility,
+    food,
+    meal_type: mealType as "delivery" | "dining" | "home",
+    expense,
+    memo,
+    image_key: imageKey,
+  }));
+}
+
+export async function DELETE(request: Request) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return Response.json({ error: "기록을 찾을 수 없어요." }, { status: 400 });
+  const { DB, PHOTOS } = bindings();
+  const existing = await DB.prepare(
+    "SELECT image_key FROM records WHERE id = ? AND owner_email = ?",
+  ).bind(id, user.email).first<{ image_key: string | null }>();
+  if (!existing) return Response.json({ error: "기록을 찾을 수 없어요." }, { status: 404 });
+  await DB.prepare("DELETE FROM records WHERE id = ? AND owner_email = ?").bind(id, user.email).run();
+  if (existing.image_key) await PHOTOS.delete(existing.image_key);
+  return Response.json({ ok: true });
+}
