@@ -35,6 +35,17 @@ button { cursor:pointer; }
 .mini-calendar button,.mini-calendar span { position:relative; min-width:0; height:20px; padding:0; border:0; background:transparent; font-family:"KimBold",sans-serif; font-size:13px; line-height:20px; text-align:center; }
 .mini-calendar button.active::after { content:""; position:absolute; inset:-3px -1px; border:3px solid var(--ink); border-radius:43% 56% 46% 52%/55% 45% 57% 43%; transform:rotate(-7deg); }
 .mini-calendar button.current { color:#d48791; }
+.mini-calendar button.has-record::before {
+  content:"";
+  position:absolute;
+  right:22%;
+  bottom:-2px;
+  left:22%;
+  height:3px;
+  border-radius:50%;
+  background:#d98f9a;
+  clip-path:polygon(0 30%,20% 11%,43% 28%,65% 8%,100% 25%,93% 78%,69% 64%,45% 87%,19% 68%,4% 85%);
+}
 
 .header-tools { padding-top:3px; }
 .tool-row { display:flex; align-items:center; justify-content:space-between; gap:13px; }
@@ -296,6 +307,35 @@ button { cursor:pointer; }
 
 .day-sheet>header .track-add { top:9px; }
 
+.meal-type-field {
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+}
+.meal-type-field legend {
+  float:none;
+  width:auto;
+  padding:0;
+}
+.meal-type-field>div { width:100%; }
+.visibility-field {
+  display:grid;
+  grid-template-columns:112px repeat(2,minmax(0,1fr));
+  align-items:center;
+  gap:7px 5px;
+}
+.visibility-field legend {
+  float:none;
+  width:auto;
+  padding:0;
+}
+.visibility-field button { width:100%; margin:0; padding-right:3px; padding-left:3px; }
+.visibility-field label {
+  grid-column:2 / 4;
+  margin:0;
+}
+
 .login-screen {
   min-height:100dvh;
   display:grid;
@@ -364,6 +404,10 @@ button { cursor:pointer; }
   .line-field { grid-template-columns:96px 1fr; }
   .meal-type-field legend,.visibility-field legend { width:96px; }
   .visibility-field label { margin-left:96px; }
+  .meal-type-field { grid-template-columns:96px minmax(0,1fr); }
+  .visibility-field { grid-template-columns:96px repeat(2,minmax(0,1fr)); }
+  .meal-type-field legend,.visibility-field legend { width:auto; }
+  .visibility-field label { margin-left:0; }
 }
 @media(max-height:720px){
   .journal-header { height:260px; padding-top:31px; padding-bottom:3px; }

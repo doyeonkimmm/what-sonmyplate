@@ -322,7 +322,7 @@ export default function JournalApp({ user }: { user: User }) {
             <div className="week-labels">{["S", "M", "T", "W", "T", "F", "S"].map((label, index) => <b key={`${label}-${index}`}>{label}</b>)}</div>
             <div className="mini-calendar">
               {calendarCells.map((day, index) => day ? (
-                <button key={day} className={`${day === selectedDay ? "active" : ""} ${day === current.getDate() && month === current.getMonth() + 1 && year === current.getFullYear() ? "current" : ""}`} onClick={() => scrollToDay(day)}>
+                <button key={day} className={`${day === selectedDay ? "active" : ""} ${visibleRecords.some((record) => record.day === day) ? "has-record" : ""} ${day === current.getDate() && month === current.getMonth() + 1 && year === current.getFullYear() ? "current" : ""}`} onClick={() => scrollToDay(day)}>
                   {day}
                 </button>
               ) : <span key={`blank-${index}`} />)}
