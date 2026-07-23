@@ -14,6 +14,8 @@ type RecordItem = {
   showLocation: boolean;
   visibility: "private" | "friends";
   food: string;
+  mealType: "delivery" | "dining" | "home";
+  expense: number;
   memo: string;
   photoUrl?: string;
   owner?: string;
@@ -27,11 +29,11 @@ const friends: Friend[] = [
 ];
 
 const friendRecords: RecordItem[] = [
-  { id: "f1", owner: "mira", year: 2026, month: 7, day: 5, time: "12:20", location: "성수동", showLocation: true, visibility: "friends", food: "바질 파스타", memo: "오랜만에 발견한 작은 식당", tint: "#efd7ca" },
-  { id: "f2", owner: "mira", year: 2026, month: 7, day: 6, time: "18:40", location: "한강", showLocation: false, visibility: "friends", food: "레몬 에이드", memo: "바람이 시원했던 저녁", tint: "#d7e4b7" },
-  { id: "f3", owner: "june", year: 2026, month: 7, day: 5, time: "08:10", location: "집", showLocation: true, visibility: "friends", food: "프렌치 토스트", memo: "느긋한 일요일 아침", tint: "#f2d6a7" },
-  { id: "f4", owner: "june", year: 2026, month: 7, day: 7, time: "14:30", location: "망원동", showLocation: true, visibility: "friends", food: "딸기 케이크", memo: "한 조각만 먹으려 했는데", tint: "#edc0c9" },
-  { id: "f5", owner: "sol", year: 2026, month: 7, day: 6, time: "19:10", location: "을지로", showLocation: true, visibility: "friends", food: "비빔면", memo: "매콤해서 좋았어", tint: "#d7d8b5" },
+  { id: "f1", owner: "mira", year: 2026, month: 7, day: 5, time: "12:20", location: "성수동", showLocation: true, visibility: "friends", food: "바질 파스타", mealType: "dining", expense: 18000, memo: "오랜만에 발견한 작은 식당", tint: "#efd7ca" },
+  { id: "f2", owner: "mira", year: 2026, month: 7, day: 6, time: "18:40", location: "한강", showLocation: false, visibility: "friends", food: "레몬 에이드", mealType: "delivery", expense: 6500, memo: "바람이 시원했던 저녁", tint: "#d7e4b7" },
+  { id: "f3", owner: "june", year: 2026, month: 7, day: 5, time: "08:10", location: "집", showLocation: true, visibility: "friends", food: "프렌치 토스트", mealType: "home", expense: 0, memo: "느긋한 일요일 아침", tint: "#f2d6a7" },
+  { id: "f4", owner: "june", year: 2026, month: 7, day: 7, time: "14:30", location: "망원동", showLocation: true, visibility: "friends", food: "딸기 케이크", mealType: "dining", expense: 8500, memo: "한 조각만 먹으려 했는데", tint: "#edc0c9" },
+  { id: "f5", owner: "sol", year: 2026, month: 7, day: 6, time: "19:10", location: "을지로", showLocation: true, visibility: "friends", food: "비빔면", mealType: "home", expense: 0, memo: "매콤해서 좋았어", tint: "#d7d8b5" },
 ];
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -54,6 +56,8 @@ export default function JournalApp({ user }: { user: User }) {
   const [showLocation, setShowLocation] = useState(true);
   const [visibility, setVisibility] = useState<"private" | "friends">("private");
   const [food, setFood] = useState("");
+  const [mealType, setMealType] = useState<"delivery" | "dining" | "home">("home");
+  const [expense, setExpense] = useState("");
   const [memo, setMemo] = useState("");
   const [friendEmail, setFriendEmail] = useState("");
   const [managedFriends, setManagedFriends] = useState(friends);
@@ -62,6 +66,8 @@ export default function JournalApp({ user }: { user: User }) {
   const [rouletteResult, setRouletteResult] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Friend | null>(null);
+  const [statsStart, setStatsStart] = useState("2026-01");
+  const [statsEnd, setStatsEnd] = useState("2026-07");
   const trackRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<number, HTMLElement | null>>({});
   const drag = useRef({ active: false, x: 0, left: 0 });
@@ -145,6 +151,8 @@ export default function JournalApp({ user }: { user: User }) {
     setPhotoFile(null);
     setLocation("");
     setFood("");
+    setMealType("home");
+    setExpense("");
     setMemo("");
     setVisibility("private");
     setShowLocation(true);
@@ -163,6 +171,8 @@ export default function JournalApp({ user }: { user: User }) {
       showLocation,
       visibility,
       food: food.trim() || "오늘의 한 끼",
+      mealType,
+      expense: mealType === "home" ? 0 : Math.max(0, Number(expense) || 0),
       memo: memo.trim(),
       photoUrl: preview,
       tint: "#e3e1d8",
@@ -182,6 +192,8 @@ export default function JournalApp({ user }: { user: User }) {
       body.append("showLocation", String(showLocation));
       body.append("visibility", visibility);
       body.append("food", food.trim() || "오늘의 한 끼");
+      body.append("mealType", mealType);
+      body.append("expense", String(mealType === "home" ? 0 : Math.max(0, Number(expense) || 0)));
       body.append("memo", memo.trim());
       try {
         const response = await fetch("/api/records", { method: "POST", body });
@@ -274,10 +286,19 @@ export default function JournalApp({ user }: { user: User }) {
 
   const monthStart = new Date(year, month - 1, 1).getDay();
   const calendarCells = [...Array(monthStart).fill(null), ...days];
-  const stats = Object.entries(records.reduce<Record<string, number>>((acc, item) => {
+  const rangedRecords = records.filter((item) => {
+    const key = `${item.year}-${pad(item.month)}`;
+    return key >= statsStart && key <= statsEnd;
+  });
+  const stats = Object.entries(rangedRecords.reduce<Record<string, number>>((acc, item) => {
     acc[item.food] = (acc[item.food] || 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
+  const typeCounts = rangedRecords.reduce((acc, item) => {
+    acc[item.mealType] = (acc[item.mealType] || 0) + 1;
+    return acc;
+  }, { delivery: 0, dining: 0, home: 0 } as Record<"delivery" | "dining" | "home", number>);
+  const totalExpense = rangedRecords.reduce((sum, item) => sum + (item.expense || 0), 0);
   const activeFriendData = managedFriends.find((friend) => friend.id === activeFriend);
   const rouletteColors = ["#efc3c2", "#b9dedc", "#e1dba6", "#d3cdc5"];
   const rouletteBackground = `conic-gradient(${rouletteItems.map((_, index) => {
@@ -335,8 +356,6 @@ export default function JournalApp({ user }: { user: User }) {
           </div>
         )}
 
-        {!activeFriend && <button className="track-add" onClick={() => openPhoto(selectedDay)} aria-label={`${selectedDay}일에 사진 추가`}>＋</button>}
-
         <div
           className="record-track"
           ref={trackRef}
@@ -352,6 +371,7 @@ export default function JournalApp({ user }: { user: User }) {
               <article className="day-sheet" key={day} ref={(node) => { dayRefs.current[day] = node; }}>
                 <header>
                   <b>{pad(day)}</b>
+                  {!activeFriend && day === selectedDay && <button className="track-add" onPointerDown={(event) => event.stopPropagation()} onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}>＋</button>}
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
@@ -385,6 +405,15 @@ export default function JournalApp({ user }: { user: User }) {
               <label className="line-field"><span>날짜 &amp; 시간</span><div><input type="date" value={formDate} onChange={(event) => setFormDate(event.target.value)} /><input type="time" value={formTime} onChange={(event) => setFormTime(event.target.value)} /></div></label>
               <label className="line-field"><span>위치</span><input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="자동 입력 또는 직접 작성" /></label>
               <label className="line-field"><span>음식 이름</span><input value={food} onChange={(event) => setFood(event.target.value)} placeholder="무엇을 먹었나요?" /></label>
+              <fieldset className="meal-type-field">
+                <legend>식사 유형</legend>
+                <div>
+                  <button type="button" className={mealType === "delivery" ? "active" : ""} onClick={() => setMealType("delivery")}>배달</button>
+                  <button type="button" className={mealType === "dining" ? "active" : ""} onClick={() => setMealType("dining")}>외식</button>
+                  <button type="button" className={mealType === "home" ? "active" : ""} onClick={() => setMealType("home")}>집밥</button>
+                </div>
+              </fieldset>
+              {mealType !== "home" && <label className="line-field"><span>지출</span><input type="number" min="0" step="100" value={expense} onChange={(event) => setExpense(event.target.value)} placeholder="얼마를 썼나요?" /></label>}
               <fieldset className="visibility-field">
                 <legend>공개 범위</legend>
                 <button type="button" className={visibility === "private" ? "active" : ""} onClick={() => setVisibility("private")}>나만 보기</button>
@@ -444,7 +473,14 @@ export default function JournalApp({ user }: { user: User }) {
           {drawerView === "stats" && (
             <section className="drawer-panel stats-panel">
               <h2>나의 음식 통계</h2>
-              <div className="stat-summary"><b>{records.length}</b><span>번의 식사 기록</span></div>
+              <div className="stat-range"><label>시작<input type="month" value={statsStart} max={statsEnd} onChange={(event) => setStatsStart(event.target.value)} /></label><label>종료<input type="month" value={statsEnd} min={statsStart} onChange={(event) => setStatsEnd(event.target.value)} /></label></div>
+              <div className="stat-summary"><b>{rangedRecords.length}</b><span>번의 식사 기록</span></div>
+              <div className="type-stats">
+                <div><b>{typeCounts.delivery}</b><span>배달</span></div>
+                <div><b>{typeCounts.dining}</b><span>외식</span></div>
+                <div><b>{typeCounts.home}</b><span>집밥</span></div>
+              </div>
+              <div className="expense-total"><span>총지출</span><b>{totalExpense.toLocaleString("ko-KR")}원</b></div>
               {stats.length ? stats.slice(0, 6).map(([name, count], index) => (
                 <div className="stat-row" key={name}><span>{pad(index + 1)} {name}</span><i><b style={{ width: `${Math.max(18, (count / stats[0][1]) * 100)}%` }} /></i><small>{count}회</small></div>
               )) : <p className="empty-stats">사진을 추가하면 자주 먹은 음식이 여기에 보여요.</p>}

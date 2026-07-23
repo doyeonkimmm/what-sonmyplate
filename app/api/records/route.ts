@@ -9,6 +9,8 @@ type RecordRow = {
   show_location: number;
   visibility: "private" | "friends";
   food: string;
+  meal_type: "delivery" | "dining" | "home";
+  expense: number;
   memo: string;
   image_key: string | null;
 };
@@ -32,6 +34,8 @@ function toClient(row: RecordRow) {
     showLocation: Boolean(row.show_location),
     visibility: row.visibility,
     food: row.food,
+    mealType: row.meal_type,
+    expense: row.expense,
     memo: row.memo,
     photoUrl: row.image_key ? `/api/photos/${row.id}` : undefined,
   };
@@ -42,7 +46,7 @@ export async function GET() {
   if (!user) return Response.json([]);
   const { DB } = bindings();
   const result = await DB.prepare(
-    `SELECT id, record_date, record_time, location, show_location, visibility, food, memo, image_key
+    `SELECT id, record_date, record_time, location, show_location, visibility, food, meal_type, expense, memo, image_key
      FROM records WHERE owner_email = ? ORDER BY record_date DESC, record_time DESC`,
   ).bind(user.email).all<RecordRow>();
   return Response.json(result.results.map(toClient));
@@ -60,6 +64,8 @@ export async function POST(request: Request) {
   const showLocation = String(body.get("showLocation")) === "true";
   const visibility = body.get("visibility") === "friends" ? "friends" : "private";
   const food = String(body.get("food") || "오늘의 한 끼").slice(0, 80);
+  const mealType = ["delivery", "dining", "home"].includes(String(body.get("mealType"))) ? String(body.get("mealType")) : "home";
+  const expense = mealType === "home" ? 0 : Math.max(0, Number(body.get("expense")) || 0);
   const memo = String(body.get("memo") || "").slice(0, 300);
   const photo = body.get("photo");
   const { DB, PHOTOS } = bindings();
@@ -77,8 +83,8 @@ export async function POST(request: Request) {
 
   await DB.prepare(
     `INSERT INTO records
-     (id, owner_email, record_date, record_time, location, show_location, visibility, food, memo, image_key, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (id, owner_email, record_date, record_time, location, show_location, visibility, food, meal_type, expense, memo, image_key, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     id,
     user.email,
@@ -88,6 +94,8 @@ export async function POST(request: Request) {
     showLocation ? 1 : 0,
     visibility,
     food,
+    mealType,
+    expense,
     memo,
     imageKey,
     Date.now(),
@@ -101,6 +109,8 @@ export async function POST(request: Request) {
     show_location: showLocation ? 1 : 0,
     visibility,
     food,
+    meal_type: mealType as "delivery" | "dining" | "home",
+    expense,
     memo,
     image_key: imageKey,
   }), { status: 201 });

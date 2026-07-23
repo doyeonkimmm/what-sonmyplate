@@ -9,6 +9,8 @@ export const records = sqliteTable("records", {
   showLocation: integer("show_location", { mode: "boolean" }).notNull().default(true),
   visibility: text("visibility", { enum: ["private", "friends"] }).notNull().default("private"),
   food: text("food").notNull(),
+  mealType: text("meal_type", { enum: ["delivery", "dining", "home"] }).notNull().default("home"),
+  expense: integer("expense").notNull().default(0),
   memo: text("memo").notNull().default(""),
   imageKey: text("image_key"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
