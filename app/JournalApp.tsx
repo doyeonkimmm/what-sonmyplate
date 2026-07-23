@@ -313,9 +313,9 @@ export default function JournalApp({ user }: { user: User }) {
         <header className="journal-header">
           <div className="calendar-block">
             <div className="calendar-nav">
-              <button onClick={() => changeMonth(-1)} aria-label="이전 달">‹</button>
+              <button onClick={() => changeMonth(-1)} aria-label="이전 달"><img src="/ui/frame-9.svg" alt="" /></button>
               <span />
-              <button onClick={() => changeMonth(1)} aria-label="다음 달">›</button>
+              <button onClick={() => changeMonth(1)} aria-label="다음 달"><img src="/ui/frame-10.svg" alt="" /></button>
             </div>
             <div className="week-labels">{["S", "M", "T", "W", "T", "F", "S"].map((label, index) => <b key={`${label}-${index}`}>{label}</b>)}</div>
             <div className="mini-calendar">
@@ -330,7 +330,7 @@ export default function JournalApp({ user }: { user: User }) {
           <div className="header-tools">
             <div className="tool-row">
               <button className="today-sketch" onClick={goToday}>today</button>
-              <button className="menu-sketch" onClick={() => { setDrawerOpen(true); setDrawerView("menu"); }} aria-label="더보기"><i /><i /><i /></button>
+              <button className="menu-sketch" onClick={() => { setDrawerOpen(true); setDrawerView("menu"); }} aria-label="더보기"><img src="/ui/frame-2.svg" alt="" /></button>
             </div>
             <div className="year-month"><b>{year}</b><b>{pad(month)}</b></div>
             <div className="friend-row" aria-label="친구 기록장">
@@ -371,7 +371,7 @@ export default function JournalApp({ user }: { user: User }) {
               <article className="day-sheet" key={day} ref={(node) => { dayRefs.current[day] = node; }}>
                 <header>
                   <b>{pad(day)}</b>
-                  {!activeFriend && day === selectedDay && <button className="track-add" onPointerDown={(event) => event.stopPropagation()} onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}>＋</button>}
+                  {!activeFriend && day === selectedDay && <button className="track-add" onPointerDown={(event) => event.stopPropagation()} onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}><img src="/ui/frame-1.svg" alt="" /></button>}
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
@@ -433,7 +433,7 @@ export default function JournalApp({ user }: { user: User }) {
         <aside className={`more-drawer ${drawerOpen ? "open" : ""}`} aria-hidden={!drawerOpen}>
           <header>
             {drawerView !== "menu" ? <button onClick={() => setDrawerView("menu")}>‹</button> : <span />}
-            <button className="menu-sketch" onClick={() => setDrawerOpen(false)} aria-label="닫기"><i /><i /><i /></button>
+            <button className="menu-sketch" onClick={() => setDrawerOpen(false)} aria-label="닫기"><img src="/ui/frame-2.svg" alt="" /></button>
           </header>
 
           {drawerView === "menu" && (
