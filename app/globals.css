@@ -233,7 +233,7 @@ button { cursor:pointer; }
   content:"";
   position:absolute;
   right:8px; bottom:-1px; left:8px;
-  height:4px;
+  height:6px;
   background:var(--ink);
   opacity:.9;
   filter:contrast(1.3);
@@ -245,7 +245,7 @@ button { cursor:pointer; }
   position:absolute;
   z-index:5;
   top:9px; right:-2px; bottom:11px;
-  width:4px;
+  width:6px;
   background:var(--ink);
   opacity:.9;
   pointer-events:none;
@@ -262,18 +262,18 @@ button { cursor:pointer; }
   position:absolute;
   z-index:3;
   top:8px; bottom:9px; left:-2px;
-  width:4px;
+  width:6px;
   background:var(--ink);
   opacity:.9;
   clip-path:polygon(25% 0,77% 0,64% 8%,81% 18%,61% 29%,79% 41%,62% 52%,80% 63%,60% 75%,76% 87%,68% 100%,22% 100%,37% 88%,18% 76%,39% 64%,20% 52%,38% 40%,19% 29%,36% 18%,21% 8%);
 }
-.more-drawer>header { border-bottom:2px solid var(--ink); }
-.more-drawer nav>a,.more-drawer nav>button { border-bottom:2px solid var(--ink); }
+.more-drawer>header { border-bottom:3px solid var(--ink); }
+.more-drawer nav>a,.more-drawer nav>button { border-bottom:3px solid var(--ink); }
 
 .meal-type-field button,
 .visibility-field button,
 .form-actions button {
-  border:2px solid var(--ink);
+  border:2.5px solid var(--ink);
   border-radius:2px 4px 1px 3px/3px 1px 4px 2px;
   background-image:none;
 }
@@ -282,7 +282,9 @@ button { cursor:pointer; }
 .form-actions button:last-child { background:var(--yellow); }
 .photo-mini-head span,.photo-mini-head::after { display:none; }
 .photo-mini-head { height:54px; grid-template-columns:48px 1fr 48px; }
-.line-field input,.memo-field textarea,.photo-drop { border-width:2px; }
+.line-field input,.memo-field textarea,.photo-drop { border-width:2.5px; }
+
+.day-sheet>header .track-add { top:9px; }
 
 .login-screen {
   min-height:100dvh;
