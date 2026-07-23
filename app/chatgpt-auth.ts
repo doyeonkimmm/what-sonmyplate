@@ -20,22 +20,8 @@ const CALLBACK_PATH = "/callback";
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const appUser = await readSession(requestHeaders.get("cookie"));
-  if (appUser) return { displayName: appUser.displayName, email: appUser.email, fullName: appUser.displayName };
-  const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!email) return null;
-
-  const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get(USER_FULL_NAME_ENCODING_HEADER) === PERCENT_ENCODED_UTF8
-      ? safeDecodeURIComponent(encodedFullName)
-      : null;
-
-  return {
-    displayName: fullName ?? email,
-    email,
-    fullName,
-  };
+  if (!appUser) return null;
+  return { displayName: appUser.displayName, email: appUser.email, fullName: appUser.displayName };
 }
 
 export async function requireChatGPTUser(

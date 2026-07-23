@@ -228,16 +228,17 @@ export default function JournalApp({ user }: { user: User }) {
   }
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "touch") return;
     const track = trackRef.current;
     if (!track) return;
     drag.current = { active: true, x: event.clientX, left: track.scrollLeft };
-    track.setPointerCapture(event.pointerId);
+    event.currentTarget.setPointerCapture(event.pointerId);
   }
 
   function moveDrag(event: PointerEvent<HTMLDivElement>) {
     if (!drag.current.active || !trackRef.current) return;
-    trackRef.current.scrollLeft = drag.current.left - (event.clientX - drag.current.x);
+    const distance = event.clientX - drag.current.x;
+    if (Math.abs(distance) < 2) return;
+    trackRef.current.scrollLeft = drag.current.left - distance;
   }
 
   function endDrag(event: PointerEvent<HTMLDivElement>) {

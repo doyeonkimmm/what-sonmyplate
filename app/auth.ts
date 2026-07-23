@@ -18,7 +18,7 @@ export async function makeSession(user: AppUser) {
 }
 
 export async function readSession(cookie: string | null): Promise<AppUser | null> {
-  const token = cookie?.match(/(?:^|;\s*)plate_session=([^;]+)/)?.[1];
+  const token = cookie?.match(/(?:^|;\s*)plate_session_v2=([^;]+)/)?.[1];
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature || await hmac(payload) !== signature) return null;
@@ -36,4 +36,4 @@ export async function hashPassword(password: string, salt = b64(crypto.getRandom
 }
 
 export const sessionCookie = (token: string) =>
-  `plate_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`;
+  `plate_session_v2=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`;

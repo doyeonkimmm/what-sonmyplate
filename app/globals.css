@@ -56,7 +56,7 @@ button { cursor:pointer; }
 .friend-banner { position:absolute; z-index:6; top:221px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
 .friend-banner button { padding:2px 5px; border:0; border-left:1px solid var(--ink); background:transparent; font-size:10px; }
 
-.record-track { position:relative; height:calc(100% - 246px); display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; cursor:grab; touch-action:pan-x; user-select:none; }
+.record-track { position:relative; height:calc(100% - 246px); display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; cursor:grab; touch-action:pan-y; user-select:none; }
 .record-track::-webkit-scrollbar,.day-sheet::-webkit-scrollbar { display:none; }
 .record-track:active { cursor:grabbing; }
 .day-sheet { position:relative; flex:0 0 58.8%; min-width:0; height:100%; overflow-y:auto; border-right:0; background:#fff; scroll-snap-align:start; scrollbar-width:none; }

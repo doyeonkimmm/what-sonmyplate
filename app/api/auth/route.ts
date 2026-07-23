@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   const body = await request.json<Record<string, string>>();
   const action = body.action;
   const username = cleanUsername(body.username);
-  if (action === "logout") return new Response(null, { status: 204, headers: { "Set-Cookie": "plate_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" } });
+  if (action === "logout") return new Response(null, { status: 204, headers: { "Set-Cookie": "plate_session_v2=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" } });
 
   if (action === "signup") {
     const email = String(body.email || "").trim().toLowerCase();
