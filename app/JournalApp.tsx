@@ -202,10 +202,11 @@ export default function JournalApp({ user }: { user: User }) {
   }, [month, year, activeFriend]);
 
   function scrollToDay(day: number, behavior: ScrollBehavior = "smooth") {
+    const track = trackRef.current;
     const target = dayRefs.current[day];
-    if (!target) return;
+    if (!track || !target) return;
     setSelectedDay(day);
-    target.scrollIntoView({ behavior, inline: "start", block: "nearest" });
+    track.scrollTo({ left: target.offsetLeft, behavior });
   }
 
   function goToday() {
