@@ -50,7 +50,7 @@ async function compressPhoto(file: File) {
       image.onerror = () => reject(new Error("사진을 불러오지 못했어요."));
       image.src = sourceUrl;
     });
-    const maxSide = 1280;
+    const maxSide = 480;
     const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
@@ -58,7 +58,7 @@ async function compressPhoto(file: File) {
     const context = canvas.getContext("2d");
     if (!context) return file;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.72));
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.58));
     if (!blob || blob.size >= file.size) return file;
     const name = file.name.replace(/\.[^.]+$/, "") || "photo";
     return new File([blob], `${name}.webp`, { type: "image/webp", lastModified: file.lastModified });
@@ -101,7 +101,8 @@ export default function JournalApp({ user }: { user: User }) {
   const [statsEnd, setStatsEnd] = useState("2026-07");
   const trackRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<number, HTMLElement | null>>({});
-  const drag = useRef({ active: false, x: 0, left: 0 });
+  const drag = useRef({ active: false, moved: false, x: 0, left: 0 });
+  const blockTrackClick = useRef(false);
 
   const dayCount = new Date(year, month, 0).getDate();
   const days = useMemo(() => Array.from({ length: dayCount }, (_, index) => index + 1), [dayCount]);
@@ -277,22 +278,31 @@ export default function JournalApp({ user }: { user: User }) {
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
     const track = trackRef.current;
-    if (!track) return;
-    drag.current = { active: true, x: event.clientX, left: track.scrollLeft };
+    if (!track || event.button !== 0) return;
+    drag.current = { active: true, moved: false, x: event.clientX, left: track.scrollLeft };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
   function moveDrag(event: PointerEvent<HTMLDivElement>) {
     if (!drag.current.active || !trackRef.current) return;
     const distance = event.clientX - drag.current.x;
-    if (Math.abs(distance) < 2) return;
+    if (!drag.current.moved && Math.abs(distance) < 4) return;
+    drag.current.moved = true;
+    event.preventDefault();
     trackRef.current.scrollLeft = drag.current.left - distance;
   }
 
   function endDrag(event: PointerEvent<HTMLDivElement>) {
     if (!drag.current.active) return;
+    const moved = drag.current.moved;
     drag.current.active = false;
-    trackRef.current?.releasePointerCapture(event.pointerId);
+    if (trackRef.current?.hasPointerCapture(event.pointerId)) {
+      trackRef.current.releasePointerCapture(event.pointerId);
+    }
+    if (moved) {
+      blockTrackClick.current = true;
+      window.setTimeout(() => { blockTrackClick.current = false; }, 0);
+    }
     onTrackScroll();
   }
 
@@ -439,10 +449,15 @@ export default function JournalApp({ user }: { user: User }) {
           className="record-track"
           ref={trackRef}
           onScroll={onTrackScroll}
-          onPointerDown={startDrag}
-          onPointerMove={moveDrag}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
+          onPointerDownCapture={startDrag}
+          onPointerMoveCapture={moveDrag}
+          onPointerUpCapture={endDrag}
+          onPointerCancelCapture={endDrag}
+          onClickCapture={(event) => {
+            if (!blockTrackClick.current) return;
+            event.preventDefault();
+            event.stopPropagation();
+          }}
         >
           {days.map((day) => {
             const dayRecords = visibleRecords.filter((record) => record.day === day).sort((a, b) => a.time.localeCompare(b.time));
@@ -450,7 +465,7 @@ export default function JournalApp({ user }: { user: User }) {
               <article className="day-sheet" key={day} ref={(node) => { dayRefs.current[day] = node; }}>
                 <header>
                   <b>{pad(day)}</b>
-                  {!activeFriend && day === selectedDay && <button className="track-add" onPointerDown={(event) => event.stopPropagation()} onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}><img src="/ui/frame-1.svg" alt="" /></button>}
+                  {!activeFriend && day === selectedDay && <button className="track-add" onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}><img src="/ui/frame-1.svg" alt="" /></button>}
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
