@@ -698,3 +698,19 @@ button { cursor:pointer; }
 .record-delete-dialog span { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .record-delete-dialog button { min-height:44px; border:2px solid var(--ink); background:#fff; font-size:16px; }
 .record-delete-dialog button:last-child { background:var(--pink); }
+
+/* 2026-07 left-edge polish: keep the rough divider hidden until the journal is swiped. */
+.record-track::before {
+  content:"";
+  position:sticky;
+  z-index:40;
+  left:0;
+  top:0;
+  flex:0 0 6px;
+  width:6px;
+  min-width:6px;
+  height:100%;
+  margin-right:-6px;
+  background:#fff;
+  pointer-events:none;
+}
