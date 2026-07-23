@@ -4,9 +4,8 @@ import LoginGate from "./LoginGate";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
-  const params = await searchParams;
+export default async function Home() {
   const user = await getChatGPTUser();
-  if (!user || params.app !== "1") return <LoginGate />;
-  return <JournalApp user={{ displayName: user.displayName, email: user.email }} />;
+  if (!user) return <LoginGate />;
+  return <JournalApp user={{ displayName: user.displayName, email: user.email, username: user.username }} />;
 }

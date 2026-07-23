@@ -20,5 +20,16 @@ export const friendships = sqliteTable("friendships", {
   id: text("id").primaryKey(),
   ownerEmail: text("owner_email").notNull(),
   friendEmail: text("friend_email").notNull(),
+  favorite: integer("favorite", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const suggestions = sqliteTable("suggestions", {
+  id: text("id").primaryKey(),
+  ownerEmail: text("owner_email").notNull(),
+  ownerUsername: text("owner_username").notNull(),
+  ownerNickname: text("owner_nickname").notNull(),
+  content: text("content").notNull(),
+  status: text("status", { enum: ["pending", "done"] }).notNull().default("pending"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });

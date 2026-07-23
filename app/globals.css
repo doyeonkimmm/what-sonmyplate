@@ -514,3 +514,142 @@ button { cursor:pointer; }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
 }
+
+/* 2026-07 usability fixes */
+.record-track {
+  overflow-x:hidden;
+  cursor:default;
+  touch-action:pan-y;
+  scroll-snap-type:x mandatory;
+}
+.record-track:active { cursor:default; }
+.day-sheet { scroll-snap-stop:always; }
+.day-sheet::after { display:none; }
+.day-sheet>header::after,
+.day-content::after {
+  content:"";
+  position:absolute;
+  z-index:5;
+  top:0;
+  right:-2px;
+  bottom:0;
+  width:6px;
+  background:var(--ink);
+  pointer-events:none;
+  clip-path:polygon(25% 0,76% 0,67% 8%,82% 18%,65% 29%,80% 41%,64% 52%,81% 63%,65% 75%,78% 87%,72% 100%,24% 100%,35% 88%,20% 76%,37% 64%,21% 52%,36% 40%,19% 29%,35% 18%,22% 8%);
+}
+.day-sheet>header { position:sticky; }
+.day-sheet>header::after { top:8px; bottom:0; }
+.day-content { position:relative; }
+.day-content::after { top:0; bottom:0; }
+.record-expense {
+  margin-top:-4px;
+  font-size:11px!important;
+  line-height:18px!important;
+  white-space:normal!important;
+}
+
+.more-drawer { overflow-y:auto; overflow-x:hidden; }
+.more-drawer>header { position:sticky; z-index:8; top:0; background:var(--paper); }
+.drawer-panel,.stats-panel,.stat-range,.stat-range label { min-width:0; max-width:100%; }
+.stat-range input {
+  display:block;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  padding:4px 2px;
+  font-size:14px;
+}
+
+/* 사진 추가 화면과 더보기 화면의 글자 크기 통일 */
+.photo-layer .photo-drop b { font-size:22px; }
+.photo-layer .photo-drop small { font-size:15px; }
+.photo-layer .line-field,.photo-layer .memo-field { font-size:18px; }
+.photo-layer .line-field input,.photo-layer .memo-field textarea { font-size:17px; }
+.photo-layer .choice-label { font-size:18px; }
+.photo-layer .meal-type-field button,.photo-layer .visibility-field button { font-size:16px; }
+.photo-layer .choice-field>label { font-size:14px; }
+.photo-layer .expense-inline,.photo-layer .expense-inline input { font-size:16px; }
+.photo-layer .form-actions button { font-size:19px; }
+
+.remember-login {
+  display:flex!important;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px!important;
+  width:max-content;
+  font-size:13px!important;
+}
+.login-card .remember-login input {
+  width:18px;
+  height:18px;
+  padding:0;
+  accent-color:var(--ink);
+  box-shadow:none;
+}
+
+.refresh-message {
+  display:block;
+  padding:10px 14px;
+  color:#a75561;
+  font-size:14px;
+}
+.profile-panel small { display:block; margin-top:9px; font-size:13px; line-height:1.4; }
+
+.friend-list>div {
+  grid-template-columns:minmax(0,1fr) 31px 25px;
+  gap:5px;
+}
+.friend-list .friend-open {
+  min-width:0;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  padding:0;
+  border:0;
+  background:transparent;
+  text-align:left;
+}
+.friend-list .friend-open i { display:block; }
+.friend-list .favorite-button,
+.friend-list .friend-delete {
+  width:28px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:0;
+  background:transparent;
+  font-size:22px;
+}
+.friend-list .favorite-button.active { color:#c78b37; }
+
+.suggestions-panel>form {
+  display:grid;
+  gap:8px;
+}
+.suggestions-panel textarea {
+  width:100%;
+  min-width:0;
+  padding:10px;
+  border:3px solid var(--ink);
+  border-radius:2px 4px 1px 3px/3px 1px 4px 2px;
+  background:#fff;
+  resize:vertical;
+  font-size:16px;
+  line-height:1.45;
+}
+.suggestions-panel>form button { min-height:43px; }
+.admin-suggestions { margin-top:20px; padding-top:14px; border-top:3px solid var(--ink); }
+.admin-suggestions h3 { margin:0 0 10px; font-size:21px; }
+.admin-suggestions>p { font-size:14px; }
+.admin-suggestions article { margin:10px 0; padding:10px; border:2px solid var(--ink); background:#fff; }
+.admin-suggestions article.done { opacity:.58; }
+.admin-suggestions article header { display:flex; align-items:baseline; gap:5px; }
+.admin-suggestions article header small { font-size:12px; }
+.admin-suggestions article p { margin:8px 0; font-size:14px; line-height:1.45; white-space:pre-wrap; }
+.admin-suggestions article footer { display:flex; align-items:center; justify-content:space-between; gap:7px; }
+.admin-suggestions article time { font-size:10px; }
+.admin-suggestions article button { min-height:31px; padding:3px 7px; border:1px solid var(--ink); background:var(--yellow); font-size:12px; }

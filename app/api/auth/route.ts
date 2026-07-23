@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
-import { hashPassword, makeSession, sessionCookie } from "../../auth";
+import { headers } from "next/headers";
+import { hashPassword, makeSession, readSession, sessionCookie } from "../../auth";
 
 const DB = () => (env as unknown as { DB: D1Database }).DB;
 const cleanUsername = (v: unknown) => String(v || "").trim().toLowerCase();
@@ -24,7 +25,18 @@ async function ensureAuthSchema() {
 
 export async function GET(request: Request) {
   await ensureAuthSchema();
-  const username = cleanUsername(new URL(request.url).searchParams.get("username"));
+  const url = new URL(request.url);
+  if (url.searchParams.get("me") === "1") {
+    const requestHeaders = await headers();
+    const session = await readSession(requestHeaders.get("cookie"));
+    if (!session) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+    return Response.json({
+      username: session.username,
+      email: session.email,
+      displayName: session.displayName,
+    });
+  }
+  const username = cleanUsername(url.searchParams.get("username"));
   if (!/^[a-z0-9._-]{1,20}$/.test(username)) return Response.json({ available: false });
   const row = await DB().prepare("SELECT 1 FROM accounts WHERE username = ?").bind(username).first();
   return Response.json({ available: !row });
@@ -32,10 +44,16 @@ export async function GET(request: Request) {
 
 async function handlePost(request: Request) {
   await ensureAuthSchema();
-  const body = await request.json<Record<string, string>>();
+  const body = await request.json<Record<string, string | boolean>>();
   const action = body.action;
   const username = cleanUsername(body.username);
-  if (action === "logout") return new Response(null, { status: 204, headers: { "Set-Cookie": "plate_session_v3=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" } });
+  const remember = body.remember === true;
+  if (action === "logout") {
+    return Response.json(
+      { ok: true },
+      { headers: { "Set-Cookie": "plate_session_v3=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" } },
+    );
+  }
   if (action === "signup") {
     const email = String(body.email || "").trim().toLowerCase();
     const nickname = String(body.nickname || "").trim().slice(0, 20);
@@ -50,8 +68,11 @@ async function handlePost(request: Request) {
     const id = crypto.randomUUID();
     await DB().prepare("INSERT INTO accounts (id, username, email, nickname, password_hash, password_salt, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
       .bind(id, username, email, nickname, hash, salt, Date.now()).run();
-    const token = await makeSession({ id, username, email, displayName: nickname });
-    return Response.json({ ok: true }, { status: 201, headers: { "Set-Cookie": sessionCookie(token) } });
+    const token = await makeSession({ id, username, email, displayName: nickname, remember });
+    return Response.json(
+      { ok: true },
+      { status: 201, headers: { "Set-Cookie": sessionCookie(token, remember ? 2592000 : undefined) } },
+    );
   }
 
   if (action === "login") {
@@ -67,8 +88,11 @@ async function handlePost(request: Request) {
       return Response.json({ error: "아이디 또는 비밀번호가 맞지 않아요." }, { status: 401 });
     }
     await DB().prepare("DELETE FROM login_attempts WHERE key = ?").bind(key).run();
-    const token = await makeSession({ id: account.id, username, email: account.email, displayName: account.nickname });
-    return Response.json({ ok: true }, { headers: { "Set-Cookie": sessionCookie(token) } });
+    const token = await makeSession({ id: account.id, username, email: account.email, displayName: account.nickname, remember });
+    return Response.json(
+      { ok: true },
+      { headers: { "Set-Cookie": sessionCookie(token, remember ? 2592000 : undefined) } },
+    );
   }
 
   if (action === "recover") {
@@ -85,5 +109,30 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("AUTH_SAVE_FAILED", error);
     return Response.json({ error: "가입 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요. (AUTH_SAVE_FAILED)" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    await ensureAuthSchema();
+    const requestHeaders = await headers();
+    const session = await readSession(requestHeaders.get("cookie"));
+    if (!session) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+
+    const body = await request.json<{ nickname?: string }>();
+    const nickname = String(body.nickname || "").trim();
+    if (nickname.length < 2 || nickname.length > 12) {
+      return Response.json({ error: "닉네임은 2~12자로 입력해 주세요." }, { status: 400 });
+    }
+
+    await DB().prepare("UPDATE accounts SET nickname = ? WHERE id = ?").bind(nickname, session.id).run();
+    const token = await makeSession({ ...session, displayName: nickname });
+    return Response.json(
+      { ok: true, displayName: nickname },
+      { headers: { "Set-Cookie": sessionCookie(token, session.remember ? 2592000 : undefined) } },
+    );
+  } catch (error) {
+    console.error("NICKNAME_UPDATE_FAILED", error);
+    return Response.json({ error: "닉네임을 변경하지 못했어요." }, { status: 500 });
   }
 }

@@ -10,7 +10,7 @@ async function hmac(value: string) {
   return b64(new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(value))));
 }
 
-export type AppUser = { id: string; username: string; email: string; displayName: string };
+export type AppUser = { id: string; username: string; email: string; displayName: string; remember?: boolean };
 
 export async function makeSession(user: AppUser, ttlMs = 1000 * 60 * 60 * 24 * 30) {
   const payload = b64(enc.encode(JSON.stringify({ ...user, exp: Date.now() + ttlMs })));
@@ -25,7 +25,13 @@ export async function readSession(cookie: string | null): Promise<AppUser | null
   try {
     const data = JSON.parse(new TextDecoder().decode(unb64(payload)));
     if (data.exp < Date.now()) return null;
-    return { id: data.id, username: data.username, email: data.email, displayName: data.displayName };
+    return {
+      id: data.id,
+      username: data.username,
+      email: data.email,
+      displayName: data.displayName,
+      remember: Boolean(data.remember),
+    };
   } catch { return null; }
 }
 
@@ -35,5 +41,7 @@ export async function hashPassword(password: string, salt = b64(crypto.getRandom
   return { salt, hash: b64(new Uint8Array(bits)) };
 }
 
-export const sessionCookie = (token: string, maxAge = 2592000) =>
-  `plate_session_v3=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+export const sessionCookie = (token: string, maxAge?: number) => {
+  const persistence = typeof maxAge === "number" ? `; Max-Age=${maxAge}` : "";
+  return `plate_session_v3=${token}; Path=/; HttpOnly; Secure; SameSite=Lax${persistence}`;
+};

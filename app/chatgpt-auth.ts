@@ -6,6 +6,7 @@ export type ChatGPTUser = {
   displayName: string;
   email: string;
   fullName: string | null;
+  username: string;
 };
 
 const USER_EMAIL_HEADER = "oai-authenticated-user-email";
@@ -21,7 +22,12 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const appUser = await readSession(requestHeaders.get("cookie"));
   if (!appUser) return null;
-  return { displayName: appUser.displayName, email: appUser.email, fullName: appUser.displayName };
+  return {
+    displayName: appUser.displayName,
+    email: appUser.email,
+    fullName: appUser.displayName,
+    username: appUser.username,
+  };
 }
 
 export async function requireChatGPTUser(
