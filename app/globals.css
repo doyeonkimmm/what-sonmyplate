@@ -78,12 +78,15 @@ button { cursor:pointer; }
   height:42px;
   padding:0 9px 2px;
   border-radius:3px 6px 2px 5px/5px 2px 6px 3px;
-  background:#fff;
+  background:var(--yellow);
   font-family:"SSRONET","Malgun Gothic",sans-serif;
-  font-size:15px;
+  font-size:20px;
   font-weight:800;
+  box-shadow:2px 2px 0 rgb(40 40 32/.9),inset 0 -1px 0 rgb(40 40 32/.18);
+  transform:rotate(-.2deg);
   white-space:nowrap;
 }
+.friend-row .friend-empty:active { transform:rotate(-.2deg) translateY(2px); }
 .friend-banner { position:absolute; z-index:6; top:245px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
 .friend-banner button { padding:2px 5px; border:0; border-left:1px solid var(--ink); background:transparent; font-size:10px; }
 
