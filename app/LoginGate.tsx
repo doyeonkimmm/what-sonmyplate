@@ -22,7 +22,7 @@ export default function LoginGate() {
     try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
     if (!r.ok) return setMessage(data.error || (r.status >= 500 ? "가입 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요." : "입력 내용을 다시 확인해 주세요."));
     if (mode === "recover") return setMessage(data.message);
-    location.reload();
+    location.assign("/?app=1");
   }
   async function enterPreview() {
     setMessage("");
@@ -32,7 +32,7 @@ export default function LoginGate() {
       body:JSON.stringify({ action:"preview" }),
     });
     if (!response.ok) return setMessage("미리보기 화면을 열지 못했어요.");
-    location.reload();
+    location.assign("/?app=1");
   }
   return <main className="login-screen">
     <section className="login-card">
