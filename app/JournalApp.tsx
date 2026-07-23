@@ -22,20 +22,6 @@ type RecordItem = {
   tint?: string;
 };
 
-const friends: Friend[] = [
-  { id: "mira", name: "미라", email: "mira@example.com", color: "#efc3c2" },
-  { id: "june", name: "준", email: "june@example.com", color: "#b9dedc" },
-  { id: "sol", name: "솔", email: "sol@example.com", color: "#e1dba6" },
-];
-
-const friendRecords: RecordItem[] = [
-  { id: "f1", owner: "mira", year: 2026, month: 7, day: 5, time: "12:20", location: "성수동", showLocation: true, visibility: "friends", food: "바질 파스타", mealType: "dining", expense: 18000, memo: "오랜만에 발견한 작은 식당", tint: "#efd7ca" },
-  { id: "f2", owner: "mira", year: 2026, month: 7, day: 6, time: "18:40", location: "한강", showLocation: false, visibility: "friends", food: "레몬 에이드", mealType: "delivery", expense: 6500, memo: "바람이 시원했던 저녁", tint: "#d7e4b7" },
-  { id: "f3", owner: "june", year: 2026, month: 7, day: 5, time: "08:10", location: "집", showLocation: true, visibility: "friends", food: "프렌치 토스트", mealType: "home", expense: 0, memo: "느긋한 일요일 아침", tint: "#f2d6a7" },
-  { id: "f4", owner: "june", year: 2026, month: 7, day: 7, time: "14:30", location: "망원동", showLocation: true, visibility: "friends", food: "딸기 케이크", mealType: "dining", expense: 8500, memo: "한 조각만 먹으려 했는데", tint: "#edc0c9" },
-  { id: "f5", owner: "sol", year: 2026, month: 7, day: 6, time: "19:10", location: "을지로", showLocation: true, visibility: "friends", food: "비빔면", mealType: "home", expense: 0, memo: "매콤해서 좋았어", tint: "#d7d8b5" },
-];
-
 const pad = (value: number) => String(value).padStart(2, "0");
 const current = new Date();
 

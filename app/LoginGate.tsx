@@ -24,16 +24,6 @@ export default function LoginGate() {
     if (mode === "recover") return setMessage(data.message);
     location.assign("/?app=1");
   }
-  async function enterPreview() {
-    setMessage("");
-    const response = await fetch("/api/auth", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ action:"preview" }),
-    });
-    if (!response.ok) return setMessage("미리보기 화면을 열지 못했어요.");
-    location.assign("/?app=1");
-  }
   return <main className="login-screen">
     <section className="login-card">
       <img className="brand-logo" src="/logo.svg" alt="오늘모먹지" />
@@ -52,8 +42,6 @@ export default function LoginGate() {
         {mode !== "login" && <button onClick={()=>{setMode("login");setStep(1);setMessage("");}}>로그인</button>}
         {mode === "login" && <><button onClick={()=>{setMode("signup");setStep(1);}}>회원가입</button><button onClick={()=>setMode("recover")}>비밀번호를 잊었나요?</button></>}
       </div>
-      {/* TODO: 정식 출시 전에 수정용 미리보기 진입 버튼 제거 */}
-      <button type="button" className="preview-entry" onClick={enterPreview}>수정용 메인 화면 바로가기</button>
     </section>
   </main>;
 }

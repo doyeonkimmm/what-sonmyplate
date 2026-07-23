@@ -196,7 +196,7 @@ button { cursor:pointer; }
 .stat-summary { margin-bottom:20px; padding:15px 0; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); }
 .stat-summary b { display:block; font-family:"KimBold"; font-size:50px; line-height:1; }
 .stat-summary span { font-size:18px; }
-.stat-range { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:12px; }
+.stat-range { display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:16px; }
 
 /* Figma에서 내보낸 원본 손그림 에셋 */
 .journal-header::after,
@@ -454,15 +454,6 @@ button { cursor:pointer; }
 .login-primary { height:48px; margin-top:4px; border:2px solid var(--ink); border-radius:2px 5px 2px 4px/4px 2px 5px 2px; background:var(--yellow); box-shadow:1px 1px 0 rgb(40 40 32/.45),-1px 0 0 rgb(40 40 32/.2),inset 0 -1px 0 rgb(40 40 32/.18); font-size:17px; }
 .login-links { display:flex; justify-content:center; gap:18px; margin-top:18px; }
 .login-links button { padding:0; border:0; background:transparent; color:#67675f; font-size:12px; text-decoration:underline; }
-.preview-entry {
-  width:100%;
-  margin-top:22px;
-  padding:9px 8px;
-  border:1px dashed #77776f;
-  background:transparent;
-  color:#66665e;
-  font-size:12px;
-}
 .login-screen * { transition:none!important; animation:none!important; }
 .login-screen button:hover,.login-screen button:active { translate:none; transform:none; filter:none; }
 

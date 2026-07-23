@@ -36,12 +36,6 @@ async function handlePost(request: Request) {
   const action = body.action;
   const username = cleanUsername(body.username);
   if (action === "logout") return new Response(null, { status: 204, headers: { "Set-Cookie": "plate_session_v3=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" } });
-  // TODO: 정식 출시 전에 수정용 미리보기 세션 제거
-  if (action === "preview") {
-    const token = await makeSession({ id: "preview", username: "preview", email: "preview@local", displayName: "미리보기" }, 1000 * 60 * 20);
-    return Response.json({ ok: true }, { headers: { "Set-Cookie": sessionCookie(token, 1200) } });
-  }
-
   if (action === "signup") {
     const email = String(body.email || "").trim().toLowerCase();
     const nickname = String(body.nickname || "").trim().slice(0, 20);
