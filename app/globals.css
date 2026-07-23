@@ -22,7 +22,7 @@ button { cursor:pointer; }
 .site-stage { min-height:100dvh; display:grid; place-items:center; overflow:hidden; background:#e8e8e6; }
 .app-frame { position:relative; width:min(100vw,440px); height:100dvh; max-height:930px; overflow:hidden; background:var(--paper); box-shadow:0 0 0 1px rgb(0 0 0/.04),0 18px 60px rgb(0 0 0/.12); }
 
-.journal-header { position:relative; height:246px; display:grid; grid-template-columns:1.12fr .88fr; gap:20px; padding:47px 26px 4px; border-bottom:0; transform:rotate(-.15deg); }
+.journal-header { position:relative; height:270px; display:grid; grid-template-columns:1.12fr .88fr; gap:20px; padding:47px 26px 4px; border-bottom:0; transform:rotate(-.15deg); }
 .journal-header::after { content:""; position:absolute; right:7px; bottom:-2px; left:7px; height:6px; background:var(--ink); clip-path:polygon(0 28%,9% 19%,18% 34%,29% 18%,41% 31%,52% 17%,65% 35%,77% 21%,89% 32%,100% 20%,100% 76%,89% 68%,78% 82%,65% 69%,53% 84%,40% 67%,27% 80%,14% 66%,0 78%); }
 .calendar-block { align-self:start; }
 .calendar-nav { height:30px; display:grid; grid-template-columns:28px 1fr 28px; align-items:center; }
@@ -53,10 +53,10 @@ button { cursor:pointer; }
 .friend-row button.active { translate:0 -5px; box-shadow:0 5px 0 var(--ink); }
 .friend-row button span { position:absolute; top:8px; left:50%; width:17px; height:18px; border:3px solid var(--ink); border-radius:50%; background:var(--paper); transform:translateX(-50%); }
 .friend-row button i { position:absolute; right:6px; bottom:-10px; left:6px; height:30px; border:3px solid var(--ink); border-radius:50% 50% 0 0; background:var(--paper); }
-.friend-banner { position:absolute; z-index:6; top:221px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
+.friend-banner { position:absolute; z-index:6; top:245px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
 .friend-banner button { padding:2px 5px; border:0; border-left:1px solid var(--ink); background:transparent; font-size:10px; }
 
-.record-track { position:relative; height:calc(100% - 246px); display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; cursor:grab; touch-action:pan-y; user-select:none; }
+.record-track { position:relative; height:calc(100% - 270px); display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; cursor:grab; touch-action:pan-y; user-select:none; }
 .record-track::-webkit-scrollbar,.day-sheet::-webkit-scrollbar { display:none; }
 .record-track:active { cursor:grabbing; }
 .day-sheet { position:relative; flex:0 0 58.8%; min-width:0; height:100%; overflow-y:auto; border-right:0; background:#fff; scroll-snap-align:start; scrollbar-width:none; }
@@ -356,9 +356,9 @@ button { cursor:pointer; }
   .visibility-field label { margin-left:96px; }
 }
 @media(max-height:720px){
-  .journal-header { height:230px; padding-top:31px; padding-bottom:3px; }
-  .record-track { height:calc(100% - 230px); }
-  .friend-banner { top:205px; }
+  .journal-header { height:260px; padding-top:31px; padding-bottom:3px; }
+  .record-track { height:calc(100% - 260px); }
+  .friend-banner { top:235px; }
   .mini-calendar { gap:2px 1px; }
   .friend-row { margin-top:7px; }
 }
