@@ -61,6 +61,7 @@ export default function JournalApp({ user }: { user: User }) {
   const [rouletteText, setRouletteText] = useState("");
   const [rouletteResult, setRouletteResult] = useState("");
   const [spinning, setSpinning] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Friend | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<number, HTMLElement | null>>({});
   const drag = useRef({ active: false, x: 0, left: 0 });
@@ -278,6 +279,12 @@ export default function JournalApp({ user }: { user: User }) {
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
   const activeFriendData = managedFriends.find((friend) => friend.id === activeFriend);
+  const rouletteColors = ["#efc3c2", "#b9dedc", "#e1dba6", "#d3cdc5"];
+  const rouletteBackground = `conic-gradient(${rouletteItems.map((_, index) => {
+    const start = (index / rouletteItems.length) * 360;
+    const end = ((index + 1) / rouletteItems.length) * 360;
+    return `${rouletteColors[index % rouletteColors.length]} ${start}deg ${end}deg`;
+  }).join(", ") || "#f1f1ee 0deg 360deg"})`;
 
   return (
     <main className="site-stage">
@@ -328,6 +335,8 @@ export default function JournalApp({ user }: { user: User }) {
           </div>
         )}
 
+        {!activeFriend && <button className="track-add" onClick={() => openPhoto(selectedDay)} aria-label={`${selectedDay}일에 사진 추가`}>＋</button>}
+
         <div
           className="record-track"
           ref={trackRef}
@@ -343,7 +352,6 @@ export default function JournalApp({ user }: { user: User }) {
               <article className="day-sheet" key={day} ref={(node) => { dayRefs.current[day] = node; }}>
                 <header>
                   <b>{pad(day)}</b>
-                  {!activeFriend && day === selectedDay && <button onClick={() => openPhoto(day)} aria-label={`${day}일에 사진 추가`}>＋</button>}
                 </header>
                 <div className="day-content">
                   {dayRecords.map((record) => (
@@ -416,14 +424,14 @@ export default function JournalApp({ user }: { user: User }) {
             <section className="drawer-panel">
               <h2>친구 관리</h2>
               <form onSubmit={addFriend}><input type="email" value={friendEmail} onChange={(event) => setFriendEmail(event.target.value)} placeholder="친구 이메일" /><button>추가</button></form>
-              <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => removeFriend(friend)}>×</button></div>)}</div>
+              <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => setPendingDelete(friend)}>×</button></div>)}</div>
             </section>
           )}
 
           {drawerView === "roulette" && (
             <section className="drawer-panel roulette-panel">
               <h2>오늘 뭐 먹지?</h2>
-              <div className={`roulette-wheel ${spinning ? "spinning" : ""}`}><span>{rouletteResult || "?"}</span></div>
+              <div className={`roulette-wheel ${spinning ? "spinning" : ""}`} style={{ background: rouletteBackground }}><span>{rouletteResult || "?"}</span></div>
               <button className="spin-button" onClick={spinRoulette}>{spinning ? "고르는 중…" : "돌리기"}</button>
               <form onSubmit={(event) => { event.preventDefault(); if (rouletteText.trim()) { setRouletteItems((items) => [...items, rouletteText.trim()]); setRouletteText(""); } }}>
                 <input value={rouletteText} onChange={(event) => setRouletteText(event.target.value)} placeholder="메뉴 추가" />
@@ -441,6 +449,19 @@ export default function JournalApp({ user }: { user: User }) {
                 <div className="stat-row" key={name}><span>{pad(index + 1)} {name}</span><i><b style={{ width: `${Math.max(18, (count / stats[0][1]) * 100)}%` }} /></i><small>{count}회</small></div>
               )) : <p className="empty-stats">사진을 추가하면 자주 먹은 음식이 여기에 보여요.</p>}
             </section>
+          )}
+
+          {pendingDelete && (
+            <div className="delete-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-title">
+              <div>
+                <b id="delete-title">정말 삭제하시겠습니까?</b>
+                <p>{pendingDelete.name}님을 친구 목록에서 삭제합니다.</p>
+                <span>
+                  <button onClick={() => setPendingDelete(null)}>취소</button>
+                  <button onClick={() => { removeFriend(pendingDelete); setPendingDelete(null); }}>삭제</button>
+                </span>
+              </div>
+            </div>
           )}
         </aside>
       </section>
