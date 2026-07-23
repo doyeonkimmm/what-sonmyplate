@@ -258,7 +258,7 @@ export default function JournalApp({ user }: { user: User }) {
       const response = await fetch("/api/friends", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ username: email }),
       }).catch(() => null);
       if (response?.ok) {
         const saved = await response.json();
@@ -439,7 +439,7 @@ export default function JournalApp({ user }: { user: User }) {
           {drawerView === "menu" && (
             <nav>
               {user ? (
-                <a className="account-row" href="/signout-with-chatgpt?return_to=%2F"><span>{user.displayName}</span><small>로그아웃</small></a>
+                <button className="account-row" onClick={async () => { await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"logout" }) }); location.reload(); }}><span>{user.displayName}</span><small>로그아웃</small></button>
               ) : (
                 <a href="/signin-with-chatgpt?return_to=%2F">로그인 &amp; 회원가입</a>
               )}
@@ -452,7 +452,7 @@ export default function JournalApp({ user }: { user: User }) {
           {drawerView === "friends" && (
             <section className="drawer-panel">
               <h2>친구 관리</h2>
-              <form onSubmit={addFriend}><input type="email" value={friendEmail} onChange={(event) => setFriendEmail(event.target.value)} placeholder="친구 이메일" /><button>추가</button></form>
+              <form onSubmit={addFriend}><input value={friendEmail} onChange={(event) => setFriendEmail(event.target.value)} placeholder="친구 아이디" /><button>추가</button></form>
               <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => setPendingDelete(friend)}>×</button></div>)}</div>
             </section>
           )}

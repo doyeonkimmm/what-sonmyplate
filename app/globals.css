@@ -225,6 +225,101 @@ button { cursor:pointer; }
   min-height:66px;
   border:0;
 }
+
+/* 원래 레이아웃으로 복원한 거친 잉크 선 */
+.record-track { background:#fff; }
+.journal-header::after {
+  display:block;
+  content:"";
+  position:absolute;
+  right:8px; bottom:-1px; left:8px;
+  height:4px;
+  background:var(--ink);
+  opacity:.9;
+  filter:contrast(1.3);
+  clip-path:polygon(0 22%,5% 31%,11% 18%,18% 33%,25% 20%,32% 29%,41% 17%,49% 32%,58% 20%,66% 34%,74% 18%,83% 30%,91% 19%,100% 27%,100% 78%,92% 69%,84% 83%,75% 70%,66% 82%,57% 68%,48% 81%,39% 70%,30% 84%,21% 69%,11% 82%,0 72%);
+}
+.day-sheet::after {
+  display:block;
+  content:"";
+  position:absolute;
+  z-index:5;
+  top:9px; right:-2px; bottom:11px;
+  width:4px;
+  background:var(--ink);
+  opacity:.9;
+  pointer-events:none;
+  clip-path:polygon(25% 0,76% 0,65% 7%,82% 15%,62% 24%,79% 34%,61% 44%,81% 54%,64% 64%,78% 74%,60% 84%,73% 100%,24% 100%,36% 87%,20% 76%,38% 65%,21% 55%,36% 44%,18% 34%,39% 24%,22% 14%,36% 7%);
+}
+.more-drawer {
+  width:62%;
+  background:var(--paper);
+  background-image:none;
+}
+.more-drawer::before {
+  display:block;
+  content:"";
+  position:absolute;
+  z-index:3;
+  top:8px; bottom:9px; left:-2px;
+  width:4px;
+  background:var(--ink);
+  opacity:.9;
+  clip-path:polygon(25% 0,77% 0,64% 8%,81% 18%,61% 29%,79% 41%,62% 52%,80% 63%,60% 75%,76% 87%,68% 100%,22% 100%,37% 88%,18% 76%,39% 64%,20% 52%,38% 40%,19% 29%,36% 18%,21% 8%);
+}
+.more-drawer>header { border-bottom:2px solid var(--ink); }
+.more-drawer nav>a,.more-drawer nav>button { border-bottom:2px solid var(--ink); }
+
+.meal-type-field button,
+.visibility-field button,
+.form-actions button {
+  border:2px solid var(--ink);
+  border-radius:2px 4px 1px 3px/3px 1px 4px 2px;
+  background-image:none;
+}
+.meal-type-field button.active,
+.visibility-field button.active,
+.form-actions button:last-child { background:var(--yellow); }
+.photo-mini-head span,.photo-mini-head::after { display:none; }
+.photo-mini-head { height:54px; grid-template-columns:48px 1fr 48px; }
+.line-field input,.memo-field textarea,.photo-drop { border-width:2px; }
+
+.login-screen {
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
+  background:#f3f2ee;
+}
+.login-card {
+  width:min(100%,390px);
+  padding:28px 25px 24px;
+  background:var(--paper);
+  box-shadow:0 12px 35px rgb(40 40 32/.11);
+}
+.brand-logo { display:block; width:min(100%,280px); max-height:155px; margin:0 auto 8px; object-fit:contain; }
+.login-card h1 { margin:0; font-family:"KimBold"; font-size:34px; text-align:center; }
+.login-card>p { margin:4px 0 24px; color:#68685f; font-size:13px; text-align:center; }
+.login-card form { display:grid; gap:14px; }
+.login-card label { display:grid; gap:6px; font-size:14px; }
+.login-card input {
+  width:100%; height:46px; padding:8px 11px;
+  border:2px solid var(--ink); border-radius:3px 5px 2px 4px/4px 2px 5px 3px;
+  outline:none; background:white;
+}
+.login-card output { color:#b6525f; font-size:12px; line-height:1.4; }
+.login-primary { height:48px; margin-top:4px; border:2px solid var(--ink); background:var(--yellow); font-size:17px; }
+.login-links { display:flex; justify-content:center; gap:18px; margin-top:18px; }
+.login-links button { padding:0; border:0; background:transparent; color:#67675f; font-size:12px; text-decoration:underline; }
+
+@media (max-width:380px) {
+  .app-frame { width:100vw; }
+  .journal-header { grid-template-columns:1.05fr .95fr; gap:10px; padding-right:13px; padding-left:13px; }
+  .year-month { gap:7px; font-size:34px; }
+  .friend-row { gap:4px; }
+  .friend-row button { width:41px; height:41px; }
+  .login-card { padding:22px 18px; }
+}
 .stat-range label { font-size:10px; text-align:left; }
 .stat-range input { width:100%; height:36px; margin-top:4px; padding:3px; border:3px solid var(--ink); border-radius:2px 4px 1px 3px/3px 1px 4px 2px; background:#fff; font-size:9px; }
 .type-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:12px; }

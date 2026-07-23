@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { readSession } from "./auth";
 
 export type ChatGPTUser = {
   displayName: string;
@@ -18,6 +19,8 @@ const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
+  const appUser = await readSession(requestHeaders.get("cookie"));
+  if (appUser) return { displayName: appUser.displayName, email: appUser.email, fullName: appUser.displayName };
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!email) return null;
 

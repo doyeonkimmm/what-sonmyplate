@@ -22,11 +22,15 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
-  const { email } = await request.json<{ email?: string }>();
-  const friendEmail = String(email || "").trim().toLowerCase();
-  if (!friendEmail) return Response.json({ error: "이메일을 입력해 주세요." }, { status: 400 });
+  const { username } = await request.json<{ username?: string }>();
+  const friendUsername = String(username || "").trim().toLowerCase();
+  if (!friendUsername) return Response.json({ error: "친구 아이디를 입력해 주세요." }, { status: 400 });
   const id = crypto.randomUUID();
   const DB = (env as unknown as { DB: D1Database }).DB;
+  const friend = await DB.prepare("SELECT email FROM accounts WHERE username = ?").bind(friendUsername).first<{ email: string }>();
+  if (!friend) return Response.json({ error: "해당 아이디를 찾을 수 없어요." }, { status: 404 });
+  if (friend.email === user.email) return Response.json({ error: "내 아이디는 추가할 수 없어요." }, { status: 400 });
+  const friendEmail = friend.email;
   await DB.prepare(
     "INSERT INTO friendships (id, owner_email, friend_email, created_at) VALUES (?, ?, ?, ?)",
   ).bind(id, user.email, friendEmail, Date.now()).run();
