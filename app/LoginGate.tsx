@@ -17,8 +17,10 @@ export default function LoginGate() {
       setStep(step + 1); return;
     }
     const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:mode, ...form }) });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) return setMessage(data.error || "다시 확인해 주세요.");
+    const raw = await r.text();
+    let data: { error?: string; message?: string } = {};
+    try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
+    if (!r.ok) return setMessage(data.error || (r.status >= 500 ? "가입 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요." : "입력 내용을 다시 확인해 주세요."));
     if (mode === "recover") return setMessage(data.message);
     location.reload();
   }
@@ -26,7 +28,7 @@ export default function LoginGate() {
     <section className="login-card">
       <img className="brand-logo" src="/logo.svg" alt="오늘모먹지" />
       <h1>오늘모먹지</h1>
-      <p>{mode === "login" ? "오늘 먹은 순간을 차곡차곡 기록해요" : mode === "signup" ? `회원가입 ${step}/3` : "계정 찾기"}</p>
+      <p>{mode === "login" ? "오늘모먹지" : mode === "signup" ? `회원가입 ${step}/3` : "계정 찾기"}</p>
       <form onSubmit={submit}>
         {(mode !== "signup" || step === 1) && <label>아이디<input autoComplete="username" value={form.username} onChange={e=>set("username",e.target.value)} required /></label>}
         {mode === "login" && <label>비밀번호<input type="password" autoComplete="current-password" value={form.password} onChange={e=>set("password",e.target.value)} required /></label>}

@@ -4,7 +4,26 @@ import { hashPassword, makeSession, sessionCookie } from "../../auth";
 const DB = () => (env as unknown as { DB: D1Database }).DB;
 const cleanUsername = (v: unknown) => String(v || "").trim().toLowerCase();
 
+async function ensureAuthSchema() {
+  await DB().prepare(`CREATE TABLE IF NOT EXISTS accounts (
+    id text PRIMARY KEY NOT NULL,
+    username text NOT NULL UNIQUE,
+    email text NOT NULL,
+    nickname text NOT NULL,
+    password_hash text NOT NULL,
+    password_salt text NOT NULL,
+    created_at integer NOT NULL
+  )`).run();
+  await DB().prepare(`CREATE TABLE IF NOT EXISTS login_attempts (
+    key text PRIMARY KEY NOT NULL,
+    attempts integer DEFAULT 0 NOT NULL,
+    blocked_until integer DEFAULT 0 NOT NULL,
+    updated_at integer NOT NULL
+  )`).run();
+}
+
 export async function GET(request: Request) {
+  await ensureAuthSchema();
   const username = cleanUsername(new URL(request.url).searchParams.get("username"));
   if (!/^[a-z0-9._-]{4,20}$/.test(username)) return Response.json({ available: false });
   const row = await DB().prepare("SELECT 1 FROM accounts WHERE username = ?").bind(username).first();
@@ -12,6 +31,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  await ensureAuthSchema();
   const body = await request.json<Record<string, string>>();
   const action = body.action;
   const username = cleanUsername(body.username);
@@ -23,7 +43,7 @@ export async function POST(request: Request) {
     const password = String(body.password || "");
     if (!/^[a-z0-9._-]{4,20}$/.test(username)) return Response.json({ error: "아이디는 영문 소문자·숫자 4~20자로 입력해 주세요." }, { status: 400 });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Response.json({ error: "복구용 이메일을 확인해 주세요." }, { status: 400 });
-    if (password.length < 10 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) return Response.json({ error: "비밀번호는 영문과 숫자를 포함해 10자 이상이어야 해요." }, { status: 400 });
+    if (!password) return Response.json({ error: "비밀번호를 입력해 주세요." }, { status: 400 });
     if (!nickname) return Response.json({ error: "닉네임을 입력해 주세요." }, { status: 400 });
     const exists = await DB().prepare("SELECT 1 FROM accounts WHERE username = ?").bind(username).first();
     if (exists) return Response.json({ error: "이미 사용 중인 아이디예요." }, { status: 409 });
