@@ -60,7 +60,7 @@ export default function JournalApp({ user }: { user: User }) {
   const [expense, setExpense] = useState("");
   const [memo, setMemo] = useState("");
   const [friendEmail, setFriendEmail] = useState("");
-  const [managedFriends, setManagedFriends] = useState(friends);
+  const [managedFriends, setManagedFriends] = useState<Friend[]>([]);
   const [rouletteItems, setRouletteItems] = useState(["김치찌개", "파스타", "초밥", "떡볶이"]);
   const [rouletteText, setRouletteText] = useState("");
   const [rouletteResult, setRouletteResult] = useState("");
@@ -87,7 +87,7 @@ export default function JournalApp({ user }: { user: User }) {
       .catch(() => undefined);
     fetch("/api/friends")
       .then((response) => response.ok ? response.json() : [])
-      .then((data) => Array.isArray(data) && data.length && setManagedFriends(data))
+      .then((data) => Array.isArray(data) && setManagedFriends(data))
       .catch(() => undefined);
   }, [user]);
 
@@ -301,6 +301,7 @@ export default function JournalApp({ user }: { user: User }) {
   }, { delivery: 0, dining: 0, home: 0 } as Record<"delivery" | "dining" | "home", number>);
   const totalExpense = rangedRecords.reduce((sum, item) => sum + (item.expense || 0), 0);
   const activeFriendData = managedFriends.find((friend) => friend.id === activeFriend);
+  const headerFriends = managedFriends.length > 3 ? managedFriends.slice(0, 2) : managedFriends;
   const rouletteColors = ["#efc3c2", "#b9dedc", "#e1dba6", "#d3cdc5"];
   const rouletteBackground = `conic-gradient(${rouletteItems.map((_, index) => {
     const start = (index / rouletteItems.length) * 360;
@@ -335,7 +336,14 @@ export default function JournalApp({ user }: { user: User }) {
             </div>
             <div className="year-month"><b>{year}</b><b>{pad(month)}</b></div>
             <div className="friend-row" aria-label="친구 기록장">
-              {managedFriends.slice(0, 3).map((friend) => (
+              {managedFriends.length === 0 && (
+                <button
+                  className="friend-empty"
+                  onClick={() => { setDrawerOpen(true); setDrawerView("friends"); }}
+                  aria-label="친구 추가"
+                >＋</button>
+              )}
+              {headerFriends.map((friend) => (
                 <button
                   key={friend.id}
                   className={activeFriend === friend.id ? "active" : ""}
@@ -346,6 +354,13 @@ export default function JournalApp({ user }: { user: User }) {
                   <span /><i />
                 </button>
               ))}
+              {managedFriends.length > 3 && (
+                <button
+                  className="friend-overflow"
+                  onClick={() => { setDrawerOpen(true); setDrawerView("friends"); }}
+                  aria-label={`친구 ${managedFriends.length - 2}명 더 보기`}
+                >+{managedFriends.length - 2}</button>
+              )}
             </div>
           </div>
         </header>

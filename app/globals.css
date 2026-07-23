@@ -53,6 +53,16 @@ button { cursor:pointer; }
 .friend-row button.active { translate:0 -5px; box-shadow:0 5px 0 var(--ink); }
 .friend-row button span { position:absolute; top:8px; left:50%; width:17px; height:18px; border:3px solid var(--ink); border-radius:50%; background:var(--paper); transform:translateX(-50%); }
 .friend-row button i { position:absolute; right:6px; bottom:-10px; left:6px; height:30px; border:3px solid var(--ink); border-radius:50% 50% 0 0; background:var(--paper); }
+.friend-row .friend-empty,.friend-row .friend-overflow {
+  display:grid;
+  place-items:center;
+  overflow:visible;
+  background:var(--yellow);
+  font-family:"KimBold",sans-serif;
+  font-size:21px;
+  line-height:1;
+}
+.friend-row .friend-empty { background:#fff; font-size:29px; }
 .friend-banner { position:absolute; z-index:6; top:245px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
 .friend-banner button { padding:2px 5px; border:0; border-left:1px solid var(--ink); background:transparent; font-size:10px; }
 
