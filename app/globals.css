@@ -403,7 +403,7 @@ button { cursor:pointer; }
 .login-card {
   width:min(100%,390px);
   padding:28px 25px 24px;
-  background:var(--paper);
+  background:transparent;
   box-shadow:none;
 }
 .brand-logo { display:block; width:min(100%,280px); max-height:155px; margin:0 auto 8px; object-fit:contain; }
