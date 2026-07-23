@@ -73,7 +73,17 @@ button { cursor:pointer; }
   font-size:21px;
   line-height:1;
 }
-.friend-row .friend-empty { background:#fff; font-size:29px; }
+.friend-row .friend-empty {
+  width:108px;
+  height:42px;
+  padding:0 9px 2px;
+  border-radius:3px 6px 2px 5px/5px 2px 6px 3px;
+  background:#fff;
+  font-family:"SSRONET","Malgun Gothic",sans-serif;
+  font-size:15px;
+  font-weight:800;
+  white-space:nowrap;
+}
 .friend-banner { position:absolute; z-index:6; top:245px; left:50%; display:flex; align-items:center; gap:9px; padding:5px 9px; border:2px solid var(--ink); background:var(--yellow); font-size:12px; transform:translateX(-50%) rotate(-1deg); }
 .friend-banner button { padding:2px 5px; border:0; border-left:1px solid var(--ink); background:transparent; font-size:10px; }
 
@@ -305,7 +315,7 @@ button { cursor:pointer; }
 .photo-mini-head { height:54px; grid-template-columns:48px 1fr 48px; }
 .line-field input,.memo-field textarea,.photo-drop { border-width:2.5px; }
 
-.day-sheet>header .track-add { top:9px; }
+.day-sheet>header .track-add { top:15px; }
 
 .meal-type-field {
   display:grid;

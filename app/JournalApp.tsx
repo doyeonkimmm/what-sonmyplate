@@ -341,7 +341,7 @@ export default function JournalApp({ user }: { user: User }) {
                   className="friend-empty"
                   onClick={() => { setDrawerOpen(true); setDrawerView("friends"); }}
                   aria-label="친구 추가"
-                >＋</button>
+                >친구 추가하기</button>
               )}
               {headerFriends.map((friend) => (
                 <button
