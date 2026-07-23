@@ -156,6 +156,7 @@ button { cursor:pointer; }
 .drawer-panel form input { min-width:0; flex:1; font-size:14px; }
 .drawer-panel form button,.spin-button { min-width:44px; border:2px solid var(--ink); background:var(--yellow); font-size:14px; }
 .friend-list { margin-top:14px; }
+.friend-message { display:block; margin-top:9px; color:#a75561; font-size:12px; line-height:1.4; }
 .friend-list>div { display:grid; grid-template-columns:34px 1fr 25px; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--ink); }
 .friend-list i { width:32px; height:32px; border:2px solid var(--ink); border-radius:50%; }
 .friend-list span b,.friend-list span small { display:block; }

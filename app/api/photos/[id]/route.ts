@@ -10,8 +10,12 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   ).bind(id).first<{ owner_email: string; visibility: string; image_key: string | null }>();
 
   if (!row?.image_key) return new Response("Not found", { status: 404 });
-  if (row.visibility === "private" && user?.email !== row.owner_email) {
-    return new Response("Forbidden", { status: 403 });
+  if (user?.email !== row.owner_email) {
+    if (!user || row.visibility !== "friends") return new Response("Forbidden", { status: 403 });
+    const friendship = await bindings.DB.prepare(
+      "SELECT 1 FROM friendships WHERE owner_email = ? AND friend_email = ?",
+    ).bind(user.email, row.owner_email).first();
+    if (!friendship) return new Response("Forbidden", { status: 403 });
   }
 
   const object = await bindings.PHOTOS.get(row.image_key);

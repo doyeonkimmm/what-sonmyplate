@@ -60,7 +60,9 @@ export default function JournalApp({ user }: { user: User }) {
   const [expense, setExpense] = useState("");
   const [memo, setMemo] = useState("");
   const [friendEmail, setFriendEmail] = useState("");
+  const [friendMessage, setFriendMessage] = useState("");
   const [managedFriends, setManagedFriends] = useState<Friend[]>([]);
+  const [sharedRecords, setSharedRecords] = useState<RecordItem[]>([]);
   const [rouletteItems, setRouletteItems] = useState(["김치찌개", "파스타", "초밥", "떡볶이"]);
   const [rouletteText, setRouletteText] = useState("");
   const [rouletteResult, setRouletteResult] = useState("");
@@ -76,7 +78,7 @@ export default function JournalApp({ user }: { user: User }) {
   const days = useMemo(() => Array.from({ length: dayCount }, (_, index) => index + 1), [dayCount]);
   const ownRecords = records.filter((record) => record.year === year && record.month === month);
   const visibleRecords = activeFriend
-    ? friendRecords.filter((record) => record.owner === activeFriend && record.year === year && record.month === month)
+    ? sharedRecords.filter((record) => record.year === year && record.month === month)
     : ownRecords;
 
   useEffect(() => {
@@ -90,6 +92,17 @@ export default function JournalApp({ user }: { user: User }) {
       .then((data) => Array.isArray(data) && setManagedFriends(data))
       .catch(() => undefined);
   }, [user]);
+
+  useEffect(() => {
+    if (!activeFriend) {
+      setSharedRecords([]);
+      return;
+    }
+    fetch(`/api/records?friendId=${encodeURIComponent(activeFriend)}`)
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => setSharedRecords(Array.isArray(data) ? data : []))
+      .catch(() => setSharedRecords([]));
+  }, [activeFriend]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => scrollToDay(selectedDay, "auto"), 60);
@@ -250,22 +263,20 @@ export default function JournalApp({ user }: { user: User }) {
 
   async function addFriend(event: FormEvent) {
     event.preventDefault();
-    const email = friendEmail.trim();
-    if (!email) return;
-    const optimistic = { id: `custom-${Date.now()}`, name: email.split("@")[0], email, color: "#d5cde2" };
-    setManagedFriends((items) => [...items, optimistic]);
+    const username = friendEmail.trim();
+    if (!username || !user) return;
+    setFriendMessage("");
+    const response = await fetch("/api/friends", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username }),
+    }).catch(() => null);
+    if (!response) return setFriendMessage("친구를 확인하지 못했어요.");
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return setFriendMessage(data.error || "친구를 추가하지 못했어요.");
+    setManagedFriends((items) => [...items, data]);
     setFriendEmail("");
-    if (user) {
-      const response = await fetch("/api/friends", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ username: email }),
-      }).catch(() => null);
-      if (response?.ok) {
-        const saved = await response.json();
-        setManagedFriends((items) => items.map((item) => item.id === optimistic.id ? saved : item));
-      }
-    }
+    setFriendMessage(`${data.name}님을 추가했어요.`);
   }
 
   async function removeFriend(friend: Friend) {
@@ -478,6 +489,7 @@ export default function JournalApp({ user }: { user: User }) {
             <section className="drawer-panel">
               <h2>친구 관리</h2>
               <form onSubmit={addFriend}><input value={friendEmail} onChange={(event) => setFriendEmail(event.target.value)} placeholder="친구 아이디" /><button>추가</button></form>
+              {friendMessage && <output className="friend-message">{friendMessage}</output>}
               <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => setPendingDelete(friend)}>×</button></div>)}</div>
             </section>
           )}

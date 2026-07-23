@@ -41,10 +41,22 @@ function toClient(row: RecordRow) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json([]);
   const { DB } = bindings();
+  const friendId = new URL(request.url).searchParams.get("friendId");
+  if (friendId) {
+    const friendship = await DB.prepare(
+      "SELECT friend_email FROM friendships WHERE id = ? AND owner_email = ?",
+    ).bind(friendId, user.email).first<{ friend_email: string }>();
+    if (!friendship) return Response.json({ error: "친구 관계를 확인할 수 없어요." }, { status: 403 });
+    const shared = await DB.prepare(
+      `SELECT id, record_date, record_time, location, show_location, visibility, food, meal_type, expense, memo, image_key
+       FROM records WHERE owner_email = ? AND visibility = 'friends' ORDER BY record_date DESC, record_time DESC`,
+    ).bind(friendship.friend_email).all<RecordRow>();
+    return Response.json(shared.results.map(toClient));
+  }
   const result = await DB.prepare(
     `SELECT id, record_date, record_time, location, show_location, visibility, food, meal_type, expense, memo, image_key
      FROM records WHERE owner_email = ? ORDER BY record_date DESC, record_time DESC`,
