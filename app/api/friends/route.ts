@@ -9,14 +9,31 @@ const view = (row: { id: string; friend_email: string; nickname?: string | null;
   color: palette[index % palette.length],
 });
 
-export async function GET() {
+async function ensureFriendStatus(DB: D1Database) {
+  const columns = await DB.prepare("PRAGMA table_info(friendships)").all<{ name: string }>();
+  if (!columns.results.some((column) => column.name === "status")) {
+    await DB.prepare("ALTER TABLE friendships ADD status text DEFAULT 'accepted' NOT NULL").run();
+  }
+}
+
+export async function GET(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json([]);
   const DB = (env as unknown as { DB: D1Database }).DB;
+  await ensureFriendStatus(DB);
+  const requestsOnly = new URL(request.url).searchParams.get("requests") === "1";
+  if (requestsOnly) {
+    const requests = await DB.prepare(
+      `SELECT f.id, f.owner_email AS friend_email, a.nickname, a.username
+       FROM friendships f LEFT JOIN accounts a ON a.email = f.owner_email
+       WHERE f.friend_email = ? AND f.status = 'pending' ORDER BY f.created_at`,
+    ).bind(user.email).all<{ id: string; friend_email: string; nickname: string | null; username: string | null }>();
+    return Response.json(requests.results.map(view));
+  }
   const result = await DB.prepare(
     `SELECT f.id, f.friend_email, a.nickname, a.username
      FROM friendships f LEFT JOIN accounts a ON a.email = f.friend_email
-     WHERE f.owner_email = ? ORDER BY f.created_at`,
+     WHERE f.owner_email = ? AND f.status = 'accepted' ORDER BY f.created_at`,
   ).bind(user.email).all<{ id: string; friend_email: string; nickname: string | null; username: string | null }>();
   return Response.json(result.results.map(view));
 }
@@ -29,16 +46,50 @@ export async function POST(request: Request) {
   if (!friendUsername) return Response.json({ error: "친구 아이디를 입력해 주세요." }, { status: 400 });
   const id = crypto.randomUUID();
   const DB = (env as unknown as { DB: D1Database }).DB;
+  await ensureFriendStatus(DB);
   const friend = await DB.prepare("SELECT email, nickname, username FROM accounts WHERE username = ?").bind(friendUsername).first<{ email: string; nickname: string; username: string }>();
   if (!friend) return Response.json({ error: "해당 아이디를 찾을 수 없어요." }, { status: 404 });
   if (friend.email === user.email) return Response.json({ error: "내 아이디는 추가할 수 없어요." }, { status: 400 });
   const friendEmail = friend.email;
-  const exists = await DB.prepare("SELECT id FROM friendships WHERE owner_email = ? AND friend_email = ?").bind(user.email, friendEmail).first();
-  if (exists) return Response.json({ error: "이미 추가한 친구예요." }, { status: 409 });
+  const exists = await DB.prepare("SELECT status FROM friendships WHERE owner_email = ? AND friend_email = ?").bind(user.email, friendEmail).first<{ status: string }>();
+  if (exists?.status === "accepted") return Response.json({ error: "이미 친구예요." }, { status: 409 });
+  if (exists?.status === "pending") return Response.json({ error: "이미 친구 요청을 보냈어요." }, { status: 409 });
   await DB.prepare(
-    "INSERT INTO friendships (id, owner_email, friend_email, created_at) VALUES (?, ?, ?, ?)",
+    "INSERT INTO friendships (id, owner_email, friend_email, created_at, status) VALUES (?, ?, ?, ?, 'pending')",
   ).bind(id, user.email, friendEmail, Date.now()).run();
-  return Response.json(view({ id, friend_email: friendEmail, nickname: friend.nickname, username: friend.username }), { status: 201 });
+  return Response.json({ pending: true, name: friend.nickname || friend.username }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  const { id, action } = await request.json<{ id?: string; action?: "accept" | "reject" }>();
+  const DB = (env as unknown as { DB: D1Database }).DB;
+  await ensureFriendStatus(DB);
+  const pending = await DB.prepare(
+    "SELECT id, owner_email FROM friendships WHERE id = ? AND friend_email = ? AND status = 'pending'",
+  ).bind(id, user.email).first<{ id: string; owner_email: string }>();
+  if (!pending) return Response.json({ error: "처리할 친구 요청이 없어요." }, { status: 404 });
+  if (action === "reject") {
+    await DB.prepare("DELETE FROM friendships WHERE id = ?").bind(pending.id).run();
+    return new Response(null, { status: 204 });
+  }
+  if (action !== "accept") return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
+  await DB.batch([
+    DB.prepare("UPDATE friendships SET status = 'accepted' WHERE id = ?").bind(pending.id),
+    DB.prepare("UPDATE friendships SET status = 'accepted' WHERE owner_email = ? AND friend_email = ?")
+      .bind(user.email, pending.owner_email),
+    DB.prepare(
+      `INSERT INTO friendships (id, owner_email, friend_email, created_at, status)
+       SELECT ?, ?, ?, ?, 'accepted'
+       WHERE NOT EXISTS (SELECT 1 FROM friendships WHERE owner_email = ? AND friend_email = ?)`,
+    ).bind(crypto.randomUUID(), user.email, pending.owner_email, Date.now(), user.email, pending.owner_email),
+  ]);
+  const reciprocal = await DB.prepare(
+    "SELECT id FROM friendships WHERE owner_email = ? AND friend_email = ? AND status = 'accepted' ORDER BY created_at LIMIT 1",
+  ).bind(user.email, pending.owner_email).first<{ id: string }>();
+  const account = await DB.prepare("SELECT nickname, username FROM accounts WHERE email = ?").bind(pending.owner_email).first<{ nickname: string; username: string }>();
+  return Response.json(view({ id: reciprocal?.id || pending.id, friend_email: pending.owner_email, nickname: account?.nickname, username: account?.username }));
 }
 
 export async function DELETE(request: Request) {
@@ -46,6 +97,12 @@ export async function DELETE(request: Request) {
   if (!user) return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
   const id = new URL(request.url).searchParams.get("id");
   const DB = (env as unknown as { DB: D1Database }).DB;
-  await DB.prepare("DELETE FROM friendships WHERE id = ? AND owner_email = ?").bind(id, user.email).run();
+  await ensureFriendStatus(DB);
+  const friendship = await DB.prepare("SELECT friend_email FROM friendships WHERE id = ? AND owner_email = ?").bind(id, user.email).first<{ friend_email: string }>();
+  if (friendship) {
+    await DB.prepare(
+      "DELETE FROM friendships WHERE (owner_email = ? AND friend_email = ?) OR (owner_email = ? AND friend_email = ?)",
+    ).bind(user.email, friendship.friend_email, friendship.friend_email, user.email).run();
+  }
   return new Response(null, { status: 204 });
 }

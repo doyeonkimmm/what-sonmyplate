@@ -25,7 +25,7 @@ async function ensureAuthSchema() {
 export async function GET(request: Request) {
   await ensureAuthSchema();
   const username = cleanUsername(new URL(request.url).searchParams.get("username"));
-  if (!/^[a-z0-9._-]{4,20}$/.test(username)) return Response.json({ available: false });
+  if (!/^[a-z0-9._-]{1,20}$/.test(username)) return Response.json({ available: false });
   const row = await DB().prepare("SELECT 1 FROM accounts WHERE username = ?").bind(username).first();
   return Response.json({ available: !row });
 }
@@ -46,7 +46,7 @@ async function handlePost(request: Request) {
     const email = String(body.email || "").trim().toLowerCase();
     const nickname = String(body.nickname || "").trim().slice(0, 20);
     const password = String(body.password || "");
-    if (!/^[a-z0-9._-]{4,20}$/.test(username)) return Response.json({ error: "아이디는 영문 소문자·숫자 4~20자로 입력해 주세요." }, { status: 400 });
+    if (!/^[a-z0-9._-]{1,20}$/.test(username)) return Response.json({ error: "아이디는 영문 소문자·숫자 1~20자로 입력해 주세요." }, { status: 400 });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Response.json({ error: "복구용 이메일을 확인해 주세요." }, { status: 400 });
     if (!password) return Response.json({ error: "비밀번호를 입력해 주세요." }, { status: 400 });
     if (!nickname) return Response.json({ error: "닉네임을 입력해 주세요." }, { status: 400 });

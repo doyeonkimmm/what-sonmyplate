@@ -62,6 +62,7 @@ export default function JournalApp({ user }: { user: User }) {
   const [friendEmail, setFriendEmail] = useState("");
   const [friendMessage, setFriendMessage] = useState("");
   const [managedFriends, setManagedFriends] = useState<Friend[]>([]);
+  const [friendRequests, setFriendRequests] = useState<Friend[]>([]);
   const [sharedRecords, setSharedRecords] = useState<RecordItem[]>([]);
   const [rouletteItems, setRouletteItems] = useState(["김치찌개", "파스타", "초밥", "떡볶이"]);
   const [rouletteText, setRouletteText] = useState("");
@@ -90,6 +91,10 @@ export default function JournalApp({ user }: { user: User }) {
     fetch("/api/friends")
       .then((response) => response.ok ? response.json() : [])
       .then((data) => Array.isArray(data) && setManagedFriends(data))
+      .catch(() => undefined);
+    fetch("/api/friends?requests=1")
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => Array.isArray(data) && setFriendRequests(data))
       .catch(() => undefined);
   }, [user]);
 
@@ -274,9 +279,26 @@ export default function JournalApp({ user }: { user: User }) {
     if (!response) return setFriendMessage("친구를 확인하지 못했어요.");
     const data = await response.json().catch(() => ({}));
     if (!response.ok) return setFriendMessage(data.error || "친구를 추가하지 못했어요.");
-    setManagedFriends((items) => [...items, data]);
     setFriendEmail("");
-    setFriendMessage(`${data.name}님을 추가했어요.`);
+    setFriendMessage(`${data.name}님에게 친구 요청을 보냈어요.`);
+  }
+
+  async function answerFriendRequest(request: Friend, action: "accept" | "reject") {
+    setFriendMessage("");
+    const response = await fetch("/api/friends", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: request.id, action }),
+    }).catch(() => null);
+    if (!response?.ok) return setFriendMessage("친구 요청을 처리하지 못했어요.");
+    setFriendRequests((items) => items.filter((item) => item.id !== request.id));
+    if (action === "accept") {
+      const friend = await response.json();
+      setManagedFriends((items) => [...items, friend]);
+      setFriendMessage(`${friend.name}님과 친구가 되었어요.`);
+    } else {
+      setFriendMessage("친구 요청을 거절했어요.");
+    }
   }
 
   async function removeFriend(friend: Friend) {
@@ -490,6 +512,14 @@ export default function JournalApp({ user }: { user: User }) {
               <h2>친구 관리</h2>
               <form onSubmit={addFriend}><input value={friendEmail} onChange={(event) => setFriendEmail(event.target.value)} placeholder="친구 아이디" /><button>추가</button></form>
               {friendMessage && <output className="friend-message">{friendMessage}</output>}
+              {friendRequests.length > 0 && <div className="friend-requests">
+                <h3>받은 친구 요청</h3>
+                {friendRequests.map((request) => <div key={request.id}>
+                  <span><b>{request.name}</b><small>{request.email}</small></span>
+                  <button onClick={() => answerFriendRequest(request, "accept")}>수락</button>
+                  <button onClick={() => answerFriendRequest(request, "reject")}>거절</button>
+                </div>)}
+              </div>}
               <div className="friend-list">{managedFriends.map((friend) => <div key={friend.id}><i style={{ background: friend.color }} /><span><b>{friend.name}</b><small>{friend.email}</small></span><button onClick={() => setPendingDelete(friend)}>×</button></div>)}</div>
             </section>
           )}

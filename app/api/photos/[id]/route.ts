@@ -13,7 +13,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (user?.email !== row.owner_email) {
     if (!user || row.visibility !== "friends") return new Response("Forbidden", { status: 403 });
     const friendship = await bindings.DB.prepare(
-      "SELECT 1 FROM friendships WHERE owner_email = ? AND friend_email = ?",
+      "SELECT 1 FROM friendships WHERE owner_email = ? AND friend_email = ? AND status = 'accepted'",
     ).bind(user.email, row.owner_email).first();
     if (!friendship) return new Response("Forbidden", { status: 403 });
   }

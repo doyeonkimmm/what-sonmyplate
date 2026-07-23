@@ -48,7 +48,7 @@ export async function GET(request: Request) {
   const friendId = new URL(request.url).searchParams.get("friendId");
   if (friendId) {
     const friendship = await DB.prepare(
-      "SELECT friend_email FROM friendships WHERE id = ? AND owner_email = ?",
+      "SELECT friend_email FROM friendships WHERE id = ? AND owner_email = ? AND status = 'accepted'",
     ).bind(friendId, user.email).first<{ friend_email: string }>();
     if (!friendship) return Response.json({ error: "친구 관계를 확인할 수 없어요." }, { status: 403 });
     const shared = await DB.prepare(
