@@ -39,6 +39,34 @@ const friendRecords: RecordItem[] = [
 const pad = (value: number) => String(value).padStart(2, "0");
 const current = new Date();
 
+async function compressPhoto(file: File) {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.decoding = "async";
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("사진을 불러오지 못했어요."));
+      image.src = sourceUrl;
+    });
+    const maxSide = 1280;
+    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.72));
+    if (!blob || blob.size >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${name}.webp`, { type: "image/webp", lastModified: file.lastModified });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 export default function JournalApp({ user }: { user: User }) {
   const [year, setYear] = useState(2026);
   const [month, setMonth] = useState(7);
@@ -145,11 +173,13 @@ export default function JournalApp({ user }: { user: User }) {
     setPhotoOpen(true);
   }
 
-  function onPhoto(event: ChangeEvent<HTMLInputElement>) {
+  async function onPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
-    setPreview(URL.createObjectURL(file));
+    const optimized = await compressPhoto(file).catch(() => file);
+    if (preview) URL.revokeObjectURL(preview);
+    setPhotoFile(optimized);
+    setPreview(URL.createObjectURL(optimized));
     const shot = new Date(file.lastModified || Date.now());
     setFormDate(`${shot.getFullYear()}-${pad(shot.getMonth() + 1)}-${pad(shot.getDate())}`);
     setFormTime(`${pad(shot.getHours())}:${pad(shot.getMinutes())}`);
